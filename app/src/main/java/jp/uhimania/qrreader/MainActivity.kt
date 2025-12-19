@@ -110,7 +110,10 @@ fun QRReaderView(
                 context = context,
                 lifecycleOwner = lifecycleOwner,
                 callback = { barcodes, size ->
-                    decodedText = barcodes.firstOrNull()?.displayValue
+                    barcodes.firstOrNull()?.displayValue?.let {
+                        if (it != decodedText)
+                            decodedText = it
+                    }
                     barcodeRect = barcodes.firstOrNull()?.boundingBox
                     imageSize = size
                 }
