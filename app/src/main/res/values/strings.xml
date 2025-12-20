@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">QRReader</string>
+    <string name="app_name">QRリーダー</string>
     <string name="action_label_open">開く</string>
     <string name="action_label_copy">コピー</string>
 </resources>
