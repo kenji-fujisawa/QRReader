@@ -160,7 +160,9 @@ fun QRReaderView(
                             clipboard.setClipEntry(data.toClipEntry())
                         }
                     }
-                    SnackbarResult.Dismissed -> {}
+                    SnackbarResult.Dismissed -> {
+                        decodedText = null
+                    }
                 }
             }
         }
