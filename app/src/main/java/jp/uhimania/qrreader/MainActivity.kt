@@ -1,5 +1,6 @@
 package jp.uhimania.qrreader
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
 import android.content.pm.PackageManager
@@ -11,7 +12,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -81,6 +84,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ConfigurationScreenWidthHeight")
 @Composable
 fun QRReaderView(
     modifier: Modifier = Modifier,
@@ -156,7 +160,9 @@ fun QRReaderView(
                             clipboard.setClipEntry(data.toClipEntry())
                         }
                     }
-                    SnackbarResult.Dismissed -> {}
+                    SnackbarResult.Dismissed -> {
+                        decodedText = null
+                    }
                 }
             }
         }
@@ -252,6 +258,7 @@ class CodeAnalyzer(
     private val scanner: BarcodeScanner,
     private val callback: (List<Barcode>, Size) -> Unit
 ) : ImageAnalysis.Analyzer {
+    @OptIn(ExperimentalGetImage::class)
     override fun analyze(proxy: ImageProxy) {
         val image = proxy.image
         if (image == null) {
