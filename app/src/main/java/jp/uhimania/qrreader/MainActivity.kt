@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                QRReaderView()
+                QRReaderScreen()
             }
         }
     }
@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ConfigurationScreenWidthHeight")
 @Composable
-fun QRReaderView(
+fun QRReaderScreen(
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
