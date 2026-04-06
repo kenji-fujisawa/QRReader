@@ -1,9 +1,18 @@
 package jp.uhimania.qrreader.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -23,21 +32,25 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jp.uhimania.qrreader.R
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "ConfigurationScreenWidthHeight")
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun QRReaderScreen(
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: QRReaderViewModel = viewModel(factory = QRReaderViewModel.Factory),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    RequestPermission()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) {
+    ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
         val density = LocalDensity.current
         val configuration = LocalConfiguration.current
@@ -78,6 +91,15 @@ fun QRReaderScreen(
                     imageSize = uiState.imageSize
                 )
             }
+            FilledIconButton(
+                onClick = onBack,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = Icons.AutoMirrored.Filled.ArrowBack.name
+                )
+            }
         }
 
         uiState.decodedText?.let {
@@ -105,6 +127,18 @@ fun QRReaderScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RequestPermission() {
+    val context = LocalContext.current
+    val request = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(context, request) {
+        val permission = Manifest.permission.CAMERA
+        if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+            request.launch(permission)
         }
     }
 }
