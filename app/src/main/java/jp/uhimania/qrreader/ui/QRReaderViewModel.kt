@@ -1,6 +1,6 @@
 package jp.uhimania.qrreader.ui
 
-import android.graphics.Rect
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

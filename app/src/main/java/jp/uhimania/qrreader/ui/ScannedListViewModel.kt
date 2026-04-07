@@ -16,7 +16,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 data class ScannedListUiState(
-    val results: List<ScannedResult> = listOf()
+    val results: List<ScannedResult> = listOf(),
+    val isLoading: Boolean = false
 )
 
 class ScannedListViewModel(
@@ -24,11 +25,11 @@ class ScannedListViewModel(
 ) : ViewModel() {
     val uiState: StateFlow<ScannedListUiState> =
         repository.getResultsStream()
-            .map { ScannedListUiState(results = it) }
+            .map { ScannedListUiState(results = it, isLoading = false) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = ScannedListUiState()
+                initialValue = ScannedListUiState(isLoading = true)
             )
 
     companion object {

@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -86,7 +87,7 @@ fun QRReaderScreen(
                     barcodes.firstOrNull()?.displayValue?.let {
                         viewModel.updateDecodedText(it)
                     }
-                    viewModel.updateBarcodeRect(barcodes.firstOrNull()?.boundingBox)
+                    viewModel.updateBarcodeRect(barcodes.firstOrNull()?.boundingBox?.toComposeRect())
                     viewModel.updateImageSize(size)
                 }
             )

@@ -1,5 +1,6 @@
 package jp.uhimania.qrreader.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -7,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -20,8 +22,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jp.uhimania.qrreader.R
+import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 
 @Composable
 fun ScannedListScreen(
@@ -30,23 +34,31 @@ fun ScannedListScreen(
     viewModel: ScannedListViewModel = viewModel(factory = ScannedListViewModel.Factory),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onStartScanning
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = Icons.Filled.Add.name
-                )
+            AnimatedVisibility(!uiState.isLoading) {
+                FloatingActionButton(
+                    onClick = onStartScanning
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = Icons.Filled.Add.name
+                    )
+                }
             }
         }
     ) { innerPadding ->
-        val uiState by viewModel.uiState.collectAsState()
-
-        if (uiState.results.isEmpty()) {
+        if (uiState.isLoading) {
+            LoadingScreen(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            )
+        } else if (uiState.results.isEmpty()) {
             Box(
                 modifier = modifier
                     .fillMaxSize()
@@ -64,5 +76,25 @@ fun ScannedListScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LoadingScreen(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LoadingScreenPreview() {
+    QRReaderTheme {
+        LoadingScreen()
     }
 }
