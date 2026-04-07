@@ -14,7 +14,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -48,6 +50,8 @@ fun QRReaderScreen(
     viewModel: QRReaderViewModel = viewModel(factory = QRReaderViewModel.Factory),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     RequestPermission()
 
     Scaffold(
@@ -56,8 +60,15 @@ fun QRReaderScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    viewModel.saveResult()
-                    onBack()
+                    if (uiState.decodedText != null) {
+                        viewModel.saveResult()
+                        onBack()
+                    }
+                },
+                containerColor = if (uiState.decodedText != null) {
+                    FloatingActionButtonDefaults.containerColor
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
                 }
             ) {
                 Icon(
@@ -67,7 +78,6 @@ fun QRReaderScreen(
             }
         }
     ) { innerPadding ->
-        val uiState by viewModel.uiState.collectAsState()
         val density = LocalDensity.current
         val configuration = LocalConfiguration.current
         val screenSize = with(density) {
