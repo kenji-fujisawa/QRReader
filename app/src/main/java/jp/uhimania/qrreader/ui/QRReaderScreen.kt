@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -49,7 +51,20 @@ fun QRReaderScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.saveResult()
+                    onBack()
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = Icons.Filled.Check.name
+                )
+            }
+        }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
         val density = LocalDensity.current

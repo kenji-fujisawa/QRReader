@@ -4,11 +4,18 @@ import android.graphics.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import jp.uhimania.qrreader.QRReaderApplication
+import jp.uhimania.qrreader.data.DefaultScannedResultRepository
+import jp.uhimania.qrreader.data.ScannedResult
+import jp.uhimania.qrreader.data.ScannedResultRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.net.URL
 
 data class QRReaderUiState(
@@ -18,7 +25,9 @@ data class QRReaderUiState(
     val imageSize: Size = Size.Zero
 )
 
-class QRReaderViewModel : ViewModel() {
+class QRReaderViewModel(
+    private val repository: ScannedResultRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(QRReaderUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -49,10 +58,21 @@ class QRReaderViewModel : ViewModel() {
         }
     }
 
+    fun saveResult() {
+        _uiState.value.decodedText?.let {
+            viewModelScope.launch {
+                val result = ScannedResult(text = it)
+                repository.saveResult(result)
+            }
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                QRReaderViewModel()
+                val app = this[APPLICATION_KEY] as QRReaderApplication
+                val repository = DefaultScannedResultRepository(app.source)
+                QRReaderViewModel(repository)
             }
         }
     }
