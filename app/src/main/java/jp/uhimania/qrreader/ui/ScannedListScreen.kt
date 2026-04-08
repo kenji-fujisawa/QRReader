@@ -12,9 +12,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -24,8 +28,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
@@ -83,9 +89,10 @@ fun ScannedListScreen(
             LazyColumn(
                 modifier = modifier.padding(innerPadding)
             ) {
-                items(uiState.results) {
+                items(uiState.results) { result ->
                     ResultItem(
-                        result = it,
+                        result = result,
+                        onRemove = { viewModel.remove(it) },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
@@ -109,8 +116,11 @@ private fun LoadingScreen(
 @Composable
 private fun ResultItem(
     result: ScannedListUiState.ScannedResult,
+    onRemove: (ScannedListUiState.ScannedResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(modifier = modifier) {
         Column {
             Text(result.text)
@@ -148,6 +158,27 @@ private fun ResultItem(
                 Text(stringResource(R.string.action_label_copy))
             }
         }
+
+        IconButton(
+            onClick = { expanded = !expanded }
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = Icons.Default.MoreVert.name
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.label_remove)) },
+                    onClick = {
+                        onRemove(result)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -164,6 +195,9 @@ private fun LoadingScreenPreview() {
 private fun ResultItemPreview() {
     QRReaderTheme {
         val result = ScannedListUiState.ScannedResult(text = "aaa")
-        ResultItem(result)
+        ResultItem(
+            result = result,
+            onRemove = {}
+        )
     }
 }

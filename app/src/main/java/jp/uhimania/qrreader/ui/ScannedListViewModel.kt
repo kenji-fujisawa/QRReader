@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -32,6 +33,7 @@ data class ScannedListUiState(
     val isLoading: Boolean = false
 ) {
     data class ScannedResult(
+        val id: String = "",
         val text: String = "",
         val isUrl: Boolean = false,
         val date: DateFormat = DateFormat.Today
@@ -39,7 +41,7 @@ data class ScannedListUiState(
 }
 
 class ScannedListViewModel(
-    repository: ScannedResultRepository
+    private val repository: ScannedResultRepository
 ) : ViewModel() {
     val uiState: StateFlow<ScannedListUiState> =
         repository.getResultsStream()
@@ -59,6 +61,7 @@ class ScannedListViewModel(
 
     private fun toUiState(result: ScannedResult): ScannedListUiState.ScannedResult {
         return ScannedListUiState.ScannedResult(
+            id = result.id,
             text = result.text,
             isUrl = isUrl(result.text),
             date = toDateFormat(result.date)
@@ -85,6 +88,12 @@ class ScannedListViewModel(
         } else {
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
             return DateFormat.Date(formatter.format(date))
+        }
+    }
+
+    fun remove(result: ScannedListUiState.ScannedResult) {
+        viewModelScope.launch {
+            repository.removeResult(ScannedResult(id = result.id))
         }
     }
 

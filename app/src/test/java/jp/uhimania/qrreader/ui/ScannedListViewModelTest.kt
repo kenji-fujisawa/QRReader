@@ -64,5 +64,6 @@ class ScannedListViewModelTest {
             return flow
         }
         override suspend fun saveResult(result: ScannedResult) {}
+        override suspend fun removeResult(result: ScannedResult) {}
     }
 }

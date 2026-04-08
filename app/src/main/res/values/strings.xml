@@ -6,4 +6,5 @@
     <string name="date_format_today">今日</string>
     <string name="date_format_days_ago">%d 日前</string>
     <string name="date_format_months_ago">%d ヶ月前</string>
+    <string name="label_remove">削除</string>
 </resources>

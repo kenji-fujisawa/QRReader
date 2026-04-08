@@ -99,6 +99,16 @@ class ScannedResultRepositoryTest {
         assertEquals(result.date, source.upserted?.date)
     }
 
+    @Test
+    fun testRemoveResult() = runTest {
+        val source = FakeLocalDataSource()
+        val repository = DefaultScannedResultRepository(source)
+
+        val result = ScannedResult(id = "1")
+        repository.removeResult(result)
+        assertEquals(result.id, source.deleted?.id)
+    }
+
     class FakeLocalDataSource : LocalDataSource {
         val flow = MutableSharedFlow<List<LocalScannedResult>>()
         override fun observeResults(): Flow<List<LocalScannedResult>> {
@@ -113,6 +123,9 @@ class ScannedResultRepositoryTest {
             upserted = result
         }
 
-        override suspend fun delete(result: LocalScannedResult) {}
+        var deleted: LocalScannedResult? = null
+        override suspend fun delete(result: LocalScannedResult) {
+            deleted = result
+        }
     }
 }

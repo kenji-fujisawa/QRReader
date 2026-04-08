@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.map
 interface ScannedResultRepository {
     fun getResultsStream(): Flow<List<ScannedResult>>
     suspend fun saveResult(result: ScannedResult)
+    suspend fun removeResult(result: ScannedResult)
 }
 
 class DefaultScannedResultRepository(
@@ -25,6 +26,10 @@ class DefaultScannedResultRepository(
 
     override suspend fun saveResult(result: ScannedResult) {
         source.upsert(result.asLocal())
+    }
+
+    override suspend fun removeResult(result: ScannedResult) {
+        source.delete(result.asLocal())
     }
 }
 
