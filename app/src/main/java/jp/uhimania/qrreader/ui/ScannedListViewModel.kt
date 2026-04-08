@@ -45,7 +45,9 @@ class ScannedListViewModel(
         repository.getResultsStream()
             .map { results ->
                 ScannedListUiState(
-                    results = results.map { toUiState(it) },
+                    results = results
+                        .sortedByDescending { it.date }
+                        .map { toUiState(it) },
                     isLoading = false
                 )
             }
