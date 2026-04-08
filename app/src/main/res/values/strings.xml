@@ -3,4 +3,7 @@
     <string name="action_label_open">開く</string>
     <string name="action_label_copy">コピー</string>
     <string name="no_scanned_results">+ ボタンで読み取りを開始します</string>
+    <string name="date_format_today">今日</string>
+    <string name="date_format_days_ago">%d 日前</string>
+    <string name="date_format_months_ago">%d ヶ月前</string>
 </resources>

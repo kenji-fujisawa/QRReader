@@ -16,6 +16,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Date
 
 class ScannedListViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -41,12 +42,19 @@ class ScannedListViewModelTest {
 
         val results = listOf(
             ScannedResult(text = "aaa"),
-            ScannedResult(text = "bbb")
+            ScannedResult(text = "https://google.com/", date = Date(Date().time - 24 * 60 * 60 * 1000))
         )
         repository.flow.emit(results)
         assertEquals(results.count(), viewModel.uiState.value.results.count())
-        assertEquals(results[0], viewModel.uiState.value.results[0])
-        assertEquals(results[1], viewModel.uiState.value.results[1])
+
+        assertEquals(results[0].text, viewModel.uiState.value.results[0].text)
+        assertFalse(viewModel.uiState.value.results[0].isUrl)
+        assertEquals(DateFormat.Today, viewModel.uiState.value.results[0].date)
+
+        assertEquals(results[1].text, viewModel.uiState.value.results[1].text)
+        assertTrue(viewModel.uiState.value.results[1].isUrl)
+        assertEquals(DateFormat.DaysAgo(1), viewModel.uiState.value.results[1].date)
+
         assertFalse(viewModel.uiState.value.isLoading)
     }
 
