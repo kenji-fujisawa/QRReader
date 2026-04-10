@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.reader
 
 import android.Manifest
 import android.annotation.SuppressLint

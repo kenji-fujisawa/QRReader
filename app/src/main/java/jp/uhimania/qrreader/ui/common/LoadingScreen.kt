@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.common
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.CircularProgressIndicator

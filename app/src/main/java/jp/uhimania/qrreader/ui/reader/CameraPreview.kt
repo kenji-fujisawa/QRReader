@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.reader
 
 import android.view.ViewGroup
 import androidx.camera.view.PreviewView

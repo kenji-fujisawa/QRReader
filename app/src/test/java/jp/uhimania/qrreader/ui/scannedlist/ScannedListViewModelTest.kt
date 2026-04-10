@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.scannedlist
 
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository

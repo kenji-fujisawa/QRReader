@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.scannedlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

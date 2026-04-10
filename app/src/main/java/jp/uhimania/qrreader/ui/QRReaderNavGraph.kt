@@ -12,6 +12,9 @@ import jp.uhimania.qrreader.ui.NavigationRoutes.TRASH_BOX_ROUTE
 import jp.uhimania.qrreader.ui.NavigationViews.READER_SCREEN
 import jp.uhimania.qrreader.ui.NavigationViews.SCANNED_LIST_SCREEN
 import jp.uhimania.qrreader.ui.NavigationViews.TRASH_BOX_SCREEN
+import jp.uhimania.qrreader.ui.reader.QRReaderScreen
+import jp.uhimania.qrreader.ui.scannedlist.ScannedListScreen
+import jp.uhimania.qrreader.ui.trashbox.TrashBoxScreen
 
 object NavigationViews {
     const val SCANNED_LIST_SCREEN = "scanned_list"

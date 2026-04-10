@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.trashbox
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jp.uhimania.qrreader.R
 import jp.uhimania.qrreader.domain.DateFormat
+import jp.uhimania.qrreader.ui.common.LoadingScreen
 import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 
 @OptIn(ExperimentalMaterial3Api::class)

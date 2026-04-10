@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.reader
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable

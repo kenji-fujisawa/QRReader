@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.reader
 
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage

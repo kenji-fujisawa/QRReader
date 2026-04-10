@@ -1,4 +1,4 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.scannedlist
 
 import android.content.ClipData
 import androidx.compose.animation.AnimatedVisibility
@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jp.uhimania.qrreader.R
 import jp.uhimania.qrreader.domain.DateFormat
+import jp.uhimania.qrreader.ui.common.LoadingScreen
 import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 import kotlinx.coroutines.launch
 
