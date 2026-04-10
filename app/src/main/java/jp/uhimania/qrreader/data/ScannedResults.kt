@@ -6,5 +6,6 @@ import java.util.UUID
 data class ScannedResult(
     val id: String = UUID.randomUUID().toString(),
     val text: String = "",
-    val date: Date = Date()
+    val scannedDate: Date = Date(),
+    val deletedDate: Date? = null
 )

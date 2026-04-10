@@ -42,7 +42,7 @@ class ScannedListViewModelTest {
 
         val results = listOf(
             ScannedResult(text = "aaa"),
-            ScannedResult(text = "https://google.com/", date = Date(Date().time - 24 * 60 * 60 * 1000))
+            ScannedResult(text = "https://google.com/", scannedDate = Date(Date().time - 24 * 60 * 60 * 1000))
         )
         repository.flow.emit(results)
         assertEquals(results.count(), viewModel.uiState.value.results.count())
@@ -64,6 +64,6 @@ class ScannedListViewModelTest {
             return flow
         }
         override suspend fun saveResult(result: ScannedResult) {}
-        override suspend fun removeResult(result: ScannedResult) {}
+        override suspend fun markAsDelete(id: String) {}
     }
 }

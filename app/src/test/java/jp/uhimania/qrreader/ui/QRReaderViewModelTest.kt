@@ -89,6 +89,6 @@ class QRReaderViewModelTest {
             savedResult = result
         }
 
-        override suspend fun removeResult(result: ScannedResult) {}
+        override suspend fun markAsDelete(id: String) {}
     }
 }

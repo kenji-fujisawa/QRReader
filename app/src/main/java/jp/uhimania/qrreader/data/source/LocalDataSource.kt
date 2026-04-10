@@ -17,11 +17,14 @@ import java.util.Date
 
 @Dao
 interface LocalDataSource {
-    @Query("SELECT * FROM scanned_results ORDER BY date")
+    @Query("SELECT * FROM scanned_results ORDER BY scanned_date")
     fun observeResults(): Flow<List<LocalScannedResult>>
 
-    @Query("SELECT * FROM scanned_results ORDER BY date")
+    @Query("SELECT * FROM scanned_results ORDER BY scanned_date")
     suspend fun getResults(): List<LocalScannedResult>
+
+    @Query("SELECT * FROM scanned_results WHERE id = :id")
+    suspend fun getResult(id: String): LocalScannedResult?
 
     @Insert suspend fun insert(result: LocalScannedResult)
     @Update suspend fun update(result: LocalScannedResult)

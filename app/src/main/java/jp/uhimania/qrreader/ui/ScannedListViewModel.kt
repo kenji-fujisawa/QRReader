@@ -48,7 +48,7 @@ class ScannedListViewModel(
             .map { results ->
                 ScannedListUiState(
                     results = results
-                        .sortedByDescending { it.date }
+                        .sortedByDescending { it.scannedDate }
                         .map { toUiState(it) },
                     isLoading = false
                 )
@@ -64,7 +64,7 @@ class ScannedListViewModel(
             id = result.id,
             text = result.text,
             isUrl = isUrl(result.text),
-            date = toDateFormat(result.date)
+            date = toDateFormat(result.scannedDate)
         )
     }
 
@@ -93,7 +93,7 @@ class ScannedListViewModel(
 
     fun remove(result: ScannedListUiState.ScannedResult) {
         viewModelScope.launch {
-            repository.removeResult(ScannedResult(id = result.id))
+            repository.markAsDelete(result.id)
         }
     }
 

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import java.util.Date
@@ -19,17 +20,20 @@ class LocalDataSourceTest {
         LocalScannedResult(
             id = "1",
             text = "aaa",
-            date = Date()
+            scannedDate = Date(),
+            deletedDate = null
         ),
         LocalScannedResult(
             id = "2",
             text = "bbb",
-            date = Date()
+            scannedDate = Date(),
+            deletedDate = Date()
         ),
         LocalScannedResult(
             id = "3",
             text = "ccc",
-            date = Date()
+            scannedDate = Date(),
+            deletedDate = null
         )
     )
 
@@ -65,7 +69,7 @@ class LocalDataSourceTest {
         val result0 = results[0].copy(text = "test")
         source.update(result0)
 
-        val result2 = results[2].copy(date = Date())
+        val result2 = results[2].copy(scannedDate = Date())
         source.update(result2)
 
         val values = source.getResults()
@@ -88,7 +92,7 @@ class LocalDataSourceTest {
         val result0 = results[0].copy(text = "test")
         source.upsert(result0)
 
-        val result2 = results[2].copy(date = Date())
+        val result2 = results[2].copy(scannedDate = Date())
         source.upsert(result2)
 
         values = source.getResults()
@@ -119,5 +123,19 @@ class LocalDataSourceTest {
         assertEquals(results[0], values[0])
         assertEquals(results[1], values[1])
         assertEquals(results[2], values[2])
+    }
+
+    @Test
+    fun testGetResult() = runBlocking {
+        results.forEach { source.insert(it) }
+
+        var value = source.getResult(results[0].id)
+        assertEquals(results[0], value)
+
+        value = source.getResult(results[2].id)
+        assertEquals(results[2], value)
+
+        value = source.getResult("")
+        assertNull(value)
     }
 }
