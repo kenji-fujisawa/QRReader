@@ -95,5 +95,7 @@ class QRReaderViewModelTest {
 
         override suspend fun markAsDelete(id: String) {}
         override suspend fun unmarkAsDelete(id: String) {}
+        override suspend fun forceDelete(id: String) {}
+        override suspend fun purgeExpired() {}
     }
 }

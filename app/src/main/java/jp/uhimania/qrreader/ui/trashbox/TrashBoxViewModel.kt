@@ -64,6 +64,12 @@ class TrashBoxViewModel(
         }
     }
 
+    fun forceRemove(result: TrashBoxUiState.ScannedResult) {
+        viewModelScope.launch {
+            repository.forceDelete(result.id)
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

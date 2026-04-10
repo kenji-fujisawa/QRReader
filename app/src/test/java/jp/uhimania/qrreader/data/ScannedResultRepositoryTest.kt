@@ -177,12 +177,56 @@ class ScannedResultRepositoryTest {
         assertNull(source.updated?.deletedDate)
     }
 
+    @Test
+    fun testForceDelete() = runTest {
+        val source = FakeLocalDataSource()
+        val repository = DefaultScannedResultRepository(source)
+
+        val id = "1"
+        repository.forceDelete(id)
+        assertEquals(1, source.deleted.count())
+        assertEquals(id, source.deleted[0].id)
+    }
+
+    @Test
+    fun testPurgeExpired() = runTest {
+        val source = FakeLocalDataSource()
+        val repository = DefaultScannedResultRepository(source)
+
+        repository.purgeExpired()
+        assertEquals(1, source.deleted.count())
+        assertEquals("3", source.deleted[0].id)
+    }
+
     class FakeLocalDataSource : LocalDataSource {
         val flow = MutableSharedFlow<List<LocalScannedResult>>()
         override fun observeResults(): Flow<List<LocalScannedResult>> {
             return flow
         }
-        override suspend fun getResults(): List<LocalScannedResult> { return listOf() }
+
+        val results = listOf(
+            LocalScannedResult(
+                id = "1",
+                text = "",
+                scannedDate = Date(),
+                deletedDate = null
+            ),
+            LocalScannedResult(
+                id = "2",
+                text = "",
+                scannedDate = Date(),
+                deletedDate = Date(Date().time - 30L * 24 * 60 * 60 * 1000 + 1000)
+            ),
+            LocalScannedResult(
+                id = "3",
+                text = "",
+                scannedDate = Date(),
+                deletedDate = Date(Date().time - 30L * 24 * 60 * 60 * 1000 - 1000)
+            )
+        )
+        override suspend fun getResults(): List<LocalScannedResult> {
+            return results
+        }
 
         val result = LocalScannedResult(
             id = "",
@@ -206,9 +250,9 @@ class ScannedResultRepositoryTest {
             upserted = result
         }
 
-        var deleted: LocalScannedResult? = null
+        var deleted: MutableList<LocalScannedResult> = mutableListOf()
         override suspend fun delete(result: LocalScannedResult) {
-            deleted = result
+            deleted.add(result)
         }
     }
 }

@@ -52,6 +52,12 @@ class ScannedListViewModel(
                 initialValue = ScannedListUiState(isLoading = true)
             )
 
+    init {
+        viewModelScope.launch {
+            repository.purgeExpired()
+        }
+    }
+
     private fun toUiState(result: ScannedResult): ScannedListUiState.ScannedResult {
         return ScannedListUiState.ScannedResult(
             id = result.id,

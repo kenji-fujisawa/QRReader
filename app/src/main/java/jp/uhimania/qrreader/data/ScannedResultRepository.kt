@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import java.util.Calendar
 import java.util.Date
 
 interface ScannedResultRepository {
@@ -15,6 +16,8 @@ interface ScannedResultRepository {
     suspend fun saveResult(result: ScannedResult)
     suspend fun markAsDelete(id: String)
     suspend fun unmarkAsDelete(id: String)
+    suspend fun forceDelete(id: String)
+    suspend fun purgeExpired()
 }
 
 class DefaultScannedResultRepository(
@@ -55,6 +58,21 @@ class DefaultScannedResultRepository(
             val restored = it.copy(deletedDate = null)
             source.update(restored)
         }
+    }
+
+    override suspend fun forceDelete(id: String) {
+        source.getResult(id)?.let {
+            source.delete(it)
+        }
+    }
+
+    override suspend fun purgeExpired() {
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_MONTH, -30)
+        source.getResults()
+            .filter { it.deletedDate != null }
+            .filter { it.deletedDate!! < calendar.time }
+            .forEach { source.delete(it) }
     }
 }
 
