@@ -2,6 +2,8 @@ package jp.uhimania.qrreader.ui
 
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
+import jp.uhimania.qrreader.domain.DateFormat
+import jp.uhimania.qrreader.domain.FormatDateUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +34,8 @@ class TrashBoxViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         val repository = FakeScannedResultRepository()
-        val viewModel = TrashBoxViewModel(repository)
+        val useCase = FormatDateUseCase()
+        val viewModel = TrashBoxViewModel(repository, useCase)
 
         backgroundScope.launch(UnconfinedTestDispatcher()) {
             viewModel.uiState.collect {}

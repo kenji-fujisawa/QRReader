@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
+import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,8 @@ class QRReaderViewModelTest {
     @Test
     fun testUiState() {
         val repository = FakeScannedResultRepository()
-        val viewModel = QRReaderViewModel(repository)
+        val useCase = ValidateUrlUseCase()
+        val viewModel = QRReaderViewModel(repository, useCase)
         assertNull(viewModel.uiState.value.decodedText)
         assertFalse(viewModel.uiState.value.isUrl)
         assertNull(viewModel.uiState.value.barCodeRect)
@@ -70,7 +72,8 @@ class QRReaderViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         val repository = FakeScannedResultRepository()
-        val viewModel = QRReaderViewModel(repository)
+        val useCase = ValidateUrlUseCase()
+        val viewModel = QRReaderViewModel(repository, useCase)
 
         viewModel.saveResult()
         assertNull(repository.savedResult)

@@ -10,14 +10,14 @@ import jp.uhimania.qrreader.QRReaderApplication
 import jp.uhimania.qrreader.data.DefaultScannedResultRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
+import jp.uhimania.qrreader.domain.DateFormat
+import jp.uhimania.qrreader.domain.FormatDateUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 data class TrashBoxUiState(
     val results: List<ScannedResult> = listOf(),
@@ -31,7 +31,8 @@ data class TrashBoxUiState(
 }
 
 class TrashBoxViewModel(
-    private val repository: ScannedResultRepository
+    private val repository: ScannedResultRepository,
+    private val formatDateUseCase: FormatDateUseCase
 ): ViewModel() {
     val uiState: StateFlow<TrashBoxUiState> =
         repository.getDeletedResultsStream()
@@ -53,22 +54,8 @@ class TrashBoxViewModel(
         return TrashBoxUiState.ScannedResult(
             id = result.id,
             text = result.text,
-            date = toDateFormat(result.deletedDate ?: Date())
+            date = formatDateUseCase(result.deletedDate ?: Date())
         )
-    }
-
-    private fun toDateFormat(date: Date): DateFormat {
-        val now = Date()
-        if (date.year() == now.year() && date.month() == now.month() && date.day() == now.day()) {
-            return DateFormat.Today
-        } else if (date.year() == now.year() && date.month() == now.month()) {
-            return DateFormat.DaysAgo(now.day() - date.day())
-        } else if (date.year() == now.year()) {
-            return DateFormat.MonthsAgo(now.month() - date.month())
-        } else {
-            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-            return DateFormat.Date(formatter.format(date))
-        }
     }
 
     fun restore(result: TrashBoxUiState.ScannedResult) {
@@ -82,7 +69,8 @@ class TrashBoxViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as QRReaderApplication
                 val repository = DefaultScannedResultRepository(app.source)
-                TrashBoxViewModel(repository)
+                val useCase = FormatDateUseCase()
+                TrashBoxViewModel(repository, useCase)
             }
         }
     }

@@ -2,6 +2,9 @@ package jp.uhimania.qrreader.ui
 
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
+import jp.uhimania.qrreader.domain.DateFormat
+import jp.uhimania.qrreader.domain.FormatDateUseCase
+import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +35,9 @@ class ScannedListViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         val repository = FakeScannedResultRepository()
-        val viewModel = ScannedListViewModel(repository)
+        val formatDateUseCase = FormatDateUseCase()
+        val validateUrlUseCase = ValidateUrlUseCase()
+        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
 
         backgroundScope.launch(UnconfinedTestDispatcher()) {
             viewModel.uiState.collect {}

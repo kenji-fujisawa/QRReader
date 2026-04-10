@@ -12,11 +12,11 @@ import jp.uhimania.qrreader.QRReaderApplication
 import jp.uhimania.qrreader.data.DefaultScannedResultRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
+import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.net.URL
 
 data class QRReaderUiState(
     val decodedText: String? = null,
@@ -26,14 +26,15 @@ data class QRReaderUiState(
 )
 
 class QRReaderViewModel(
-    private val repository: ScannedResultRepository
+    private val repository: ScannedResultRepository,
+    private val validateUrlUseCase: ValidateUrlUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(QRReaderUiState())
     val uiState = _uiState.asStateFlow()
 
     fun updateDecodedText(text: String?) {
         if (text != _uiState.value.decodedText) {
-            _uiState.update { it.copy(decodedText = text, isUrl = isUrl(text)) }
+            _uiState.update { it.copy(decodedText = text, isUrl = validateUrlUseCase(text ?: "")) }
         }
     }
 
@@ -46,15 +47,6 @@ class QRReaderViewModel(
     fun updateImageSize(size: Size) {
         if (size != _uiState.value.imageSize) {
             _uiState.update { it.copy(imageSize = size) }
-        }
-    }
-
-    private fun isUrl(text: String?): Boolean {
-        return try {
-            URL(text)
-            true
-        } catch (_: Exception) {
-            false
         }
     }
 
@@ -72,7 +64,8 @@ class QRReaderViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as QRReaderApplication
                 val repository = DefaultScannedResultRepository(app.source)
-                QRReaderViewModel(repository)
+                val useCase = ValidateUrlUseCase()
+                QRReaderViewModel(repository, useCase)
             }
         }
     }
