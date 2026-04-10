@@ -7,4 +7,8 @@
     <string name="date_format_days_ago">%d 日前</string>
     <string name="date_format_months_ago">%d ヶ月前</string>
     <string name="label_remove">削除</string>
+    <string name="title_scanned_list">読み取り履歴</string>
+    <string name="title_trash_box">削除済みアイテム</string>
+    <string name="no_deleted_items">削除済みアイテムはありません</string>
+    <string name="label_restore">元に戻す</string>
 </resources>

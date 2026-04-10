@@ -19,7 +19,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Date
 
-class ScannedListViewModelTest {
+class TrashBoxViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @After
     fun teardown() {
@@ -32,7 +32,7 @@ class ScannedListViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         val repository = FakeScannedResultRepository()
-        val viewModel = ScannedListViewModel(repository)
+        val viewModel = TrashBoxViewModel(repository)
 
         backgroundScope.launch(UnconfinedTestDispatcher()) {
             viewModel.uiState.collect {}
@@ -42,18 +42,16 @@ class ScannedListViewModelTest {
         assertTrue(viewModel.uiState.value.isLoading)
 
         val results = listOf(
-            ScannedResult(text = "aaa"),
-            ScannedResult(text = "https://google.com/", scannedDate = Date(Date().time - 24 * 60 * 60 * 1000))
+            ScannedResult(text = "aaa", deletedDate = Date()),
+            ScannedResult(text = "https://google.com/", deletedDate = Date(Date().time - 24 * 60 * 60 * 1000))
         )
         repository.flow.emit(results)
         assertEquals(results.count(), viewModel.uiState.value.results.count())
 
         assertEquals(results[0].text, viewModel.uiState.value.results[0].text)
-        assertFalse(viewModel.uiState.value.results[0].isUrl)
         assertEquals(DateFormat.Today, viewModel.uiState.value.results[0].date)
 
         assertEquals(results[1].text, viewModel.uiState.value.results[1].text)
-        assertTrue(viewModel.uiState.value.results[1].isUrl)
         assertEquals(DateFormat.DaysAgo(1), viewModel.uiState.value.results[1].date)
 
         assertFalse(viewModel.uiState.value.isLoading)
@@ -61,10 +59,10 @@ class ScannedListViewModelTest {
 
     class FakeScannedResultRepository : ScannedResultRepository {
         val flow = MutableSharedFlow<List<ScannedResult>>()
-        override fun getResultsStream(): Flow<List<ScannedResult>> {
+        override fun getResultsStream(): Flow<List<ScannedResult>> { return flowOf() }
+        override fun getDeletedResultsStream(): Flow<List<ScannedResult>> {
             return flow
         }
-        override fun getDeletedResultsStream(): Flow<List<ScannedResult>> { return flowOf() }
         override suspend fun saveResult(result: ScannedResult) {}
         override suspend fun markAsDelete(id: String) {}
         override suspend fun unmarkAsDelete(id: String) {}

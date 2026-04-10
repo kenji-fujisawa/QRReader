@@ -11,8 +11,10 @@ import java.util.Date
 
 interface ScannedResultRepository {
     fun getResultsStream(): Flow<List<ScannedResult>>
+    fun getDeletedResultsStream(): Flow<List<ScannedResult>>
     suspend fun saveResult(result: ScannedResult)
     suspend fun markAsDelete(id: String)
+    suspend fun unmarkAsDelete(id: String)
 }
 
 class DefaultScannedResultRepository(
@@ -28,6 +30,15 @@ class DefaultScannedResultRepository(
             .flowOn(dispatcher)
     }
 
+    override fun getDeletedResultsStream(): Flow<List<ScannedResult>> {
+        return source.observeResults()
+            .map {
+                it.filter { item -> item.deletedDate != null }
+                    .map { item -> item.asResult() }
+            }
+            .flowOn(dispatcher)
+    }
+
     override suspend fun saveResult(result: ScannedResult) {
         source.upsert(result.asLocal())
     }
@@ -36,6 +47,13 @@ class DefaultScannedResultRepository(
         source.getResult(id)?.let {
             val deleted = it.copy(deletedDate = Date())
             source.update(deleted)
+        }
+    }
+
+    override suspend fun unmarkAsDelete(id: String) {
+        source.getResult(id)?.let {
+            val restored = it.copy(deletedDate = null)
+            source.update(restored)
         }
     }
 }

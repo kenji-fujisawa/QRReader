@@ -83,6 +83,7 @@ class QRReaderViewModelTest {
 
     class FakeScannedResultRepository : ScannedResultRepository {
         override fun getResultsStream(): Flow<List<ScannedResult>> { return flowOf() }
+        override fun getDeletedResultsStream(): Flow<List<ScannedResult>> { return flowOf() }
 
         var savedResult: ScannedResult? = null
         override suspend fun saveResult(result: ScannedResult) {
@@ -90,5 +91,6 @@ class QRReaderViewModelTest {
         }
 
         override suspend fun markAsDelete(id: String) {}
+        override suspend fun unmarkAsDelete(id: String) {}
     }
 }

@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Date
@@ -83,6 +84,55 @@ class ScannedResultRepositoryTest {
         assertEquals(records2[0].deletedDate, values[1][0].deletedDate)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testGetDeletedResultsStream() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+
+        val source = FakeLocalDataSource()
+        val repository = DefaultScannedResultRepository(source, Dispatchers.Main)
+
+        val values = mutableListOf<List<ScannedResult>>()
+        backgroundScope.launch(UnconfinedTestDispatcher()) {
+            repository.getDeletedResultsStream().toList(values)
+        }
+
+        val records1 = listOf(
+            LocalScannedResult(
+                id = "1",
+                text = "aaa",
+                scannedDate = Date(),
+                deletedDate = null
+            )
+        )
+        source.flow.emit(records1)
+        assertEquals(1, values.count())
+        assertEquals(0, values[0].count())
+
+        val records2 = listOf(
+            LocalScannedResult(
+                id = "2",
+                text = "bbb",
+                scannedDate = Date(),
+                deletedDate = null
+            ),
+            LocalScannedResult(
+                id = "3",
+                text = "ccc",
+                scannedDate = Date(),
+                deletedDate = Date()
+            )
+        )
+        source.flow.emit(records2)
+        assertEquals(2, values.count())
+        assertEquals(0, values[0].count())
+        assertEquals(1, values[1].count())
+        assertEquals(records2[1].id, values[1][0].id)
+        assertEquals(records2[1].text, values[1][0].text)
+        assertEquals(records2[1].scannedDate, values[1][0].scannedDate)
+        assertEquals(records2[1].deletedDate, values[1][0].deletedDate)
+    }
+
     @Test
     fun testSaveResult() = runTest {
         val source = FakeLocalDataSource()
@@ -108,7 +158,7 @@ class ScannedResultRepositoryTest {
     }
 
     @Test
-    fun testMarkAsDelete() = runTest {
+    fun testMark_UnmarkAsDelete() = runTest {
         val source = FakeLocalDataSource()
         val repository = DefaultScannedResultRepository(source)
 
@@ -119,6 +169,12 @@ class ScannedResultRepositoryTest {
         assertEquals(source.result.scannedDate, source.updated?.scannedDate)
         assertNotNull(source.updated?.deletedDate)
         assertTrue(Date().time - (source.updated?.deletedDate?.time ?: 0) < 1000)
+
+        repository.unmarkAsDelete(id)
+        assertEquals(id, source.updated?.id)
+        assertEquals(source.result.text, source.updated?.text)
+        assertEquals(source.result.scannedDate, source.updated?.scannedDate)
+        assertNull(source.updated?.deletedDate)
     }
 
     class FakeLocalDataSource : LocalDataSource {
