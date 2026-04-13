@@ -5,12 +5,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -22,7 +25,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -70,6 +75,7 @@ fun TrashBoxScreen(
         }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
+        val selectedItem = remember { mutableStateOf<TrashBoxUiState.ScannedResult?>(null) }
 
         if (uiState.isLoading) {
             LoadingScreen(
@@ -94,10 +100,20 @@ fun TrashBoxScreen(
                     ResultItem(
                         result = result,
                         onRestore = { viewModel.restore(it) },
-                        onDelete = { viewModel.forceRemove(it) },
+                        onDelete = { selectedItem.value = it },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
+            }
+
+            selectedItem.value?.let {
+                ConfirmDialog(
+                    onDismissRequest = { selectedItem.value = null },
+                    onConfirmDelete = {
+                        viewModel.forceRemove(it)
+                        selectedItem.value = null
+                    }
+                )
             }
         }
     }
@@ -159,6 +175,42 @@ private fun ResultItem(
                         expanded = false
                     }
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ConfirmDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier
+    ) {
+        Surface(
+            modifier = Modifier.wrapContentSize(),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(stringResource(R.string.text_confirm_delete))
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(modifier = Modifier.align(Alignment.End)) {
+                    TextButton(onClick = onDismissRequest) {
+                        Text(stringResource(R.string.caption_cancel))
+                    }
+                    TextButton(onClick = onConfirmDelete) {
+                        Text(
+                            text = stringResource(R.string.caption_delete),
+                            style = TextStyle.Default.copy(color = Color.Red)
+                        )
+                    }
+                }
             }
         }
     }

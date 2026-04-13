@@ -9,7 +9,10 @@
     <string name="label_remove">削除</string>
     <string name="title_scanned_list">読み取り履歴</string>
     <string name="title_trash_box">削除済みアイテム</string>
-    <string name="no_deleted_items">削除済みアイテムはありません</string>
+    <string name="no_deleted_items">30 日経過するとゴミ箱から削除されます</string>
     <string name="label_restore">元に戻す</string>
     <string name="label_force_remove">完全に削除</string>
+    <string name="text_confirm_delete">完全に削除すると復元できません。\nよろしいですか？</string>
+    <string name="caption_cancel">キャンセル</string>
+    <string name="caption_delete">削除</string>
 </resources>
