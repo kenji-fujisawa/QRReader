@@ -75,7 +75,7 @@ fun TrashBoxScreen(
         }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
-        val selectedItem = remember { mutableStateOf<TrashBoxUiState.ScannedResult?>(null) }
+        var selectedItem by remember { mutableStateOf<TrashBoxUiState.ScannedResult?>(null) }
 
         if (uiState.isLoading) {
             LoadingScreen(
@@ -100,18 +100,18 @@ fun TrashBoxScreen(
                     ResultItem(
                         result = result,
                         onRestore = { viewModel.restore(it) },
-                        onDelete = { selectedItem.value = it },
+                        onDelete = { selectedItem = it },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
 
-            selectedItem.value?.let {
+            selectedItem?.let {
                 ConfirmDialog(
-                    onDismissRequest = { selectedItem.value = null },
+                    onDismissRequest = { selectedItem = null },
                     onConfirmDelete = {
                         viewModel.forceRemove(it)
-                        selectedItem.value = null
+                        selectedItem = null
                     }
                 )
             }
@@ -195,16 +195,16 @@ private fun ConfirmDialog(
             modifier = Modifier.wrapContentSize(),
             shape = MaterialTheme.shapes.large
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(Modifier.padding(16.dp)) {
                 Text(stringResource(R.string.text_confirm_delete))
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(Modifier.height(24.dp))
 
-                Row(modifier = Modifier.align(Alignment.End)) {
-                    TextButton(onClick = onDismissRequest) {
+                Row(Modifier.align(Alignment.End)) {
+                    TextButton(onDismissRequest) {
                         Text(stringResource(R.string.caption_cancel))
                     }
-                    TextButton(onClick = onConfirmDelete) {
+                    TextButton(onConfirmDelete) {
                         Text(
                             text = stringResource(R.string.caption_delete),
                             style = TextStyle.Default.copy(color = Color.Red)
@@ -225,6 +225,17 @@ private fun ResultItemPreview() {
             result = result,
             onRestore = {},
             onDelete = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ConfirmDialogPreview() {
+    QRReaderTheme {
+        ConfirmDialog(
+            onDismissRequest = {},
+            onConfirmDelete = {}
         )
     }
 }
