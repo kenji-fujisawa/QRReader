@@ -52,6 +52,12 @@ fun QRReaderScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.navigateToBack.collect {
+            onBack()
+        }
+    }
+
     RequestPermission()
 
     Scaffold(
@@ -62,7 +68,6 @@ fun QRReaderScreen(
                 onClick = {
                     if (uiState.decodedText != null) {
                         viewModel.saveResult()
-                        onBack()
                     }
                 },
                 containerColor = if (uiState.decodedText != null) {
