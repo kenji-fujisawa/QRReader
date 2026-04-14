@@ -4,6 +4,7 @@ import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
 import jp.uhimania.qrreader.domain.DateFormat
 import jp.uhimania.qrreader.domain.FormatDateUseCase
+import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -34,8 +35,9 @@ class TrashBoxViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
         val repository = FakeScannedResultRepository()
-        val useCase = FormatDateUseCase()
-        val viewModel = TrashBoxViewModel(repository, useCase)
+        val formatDateUseCase = FormatDateUseCase()
+        val validateUrlUseCase = ValidateUrlUseCase()
+        val viewModel = TrashBoxViewModel(repository, formatDateUseCase, validateUrlUseCase)
 
         backgroundScope.launch(UnconfinedTestDispatcher()) {
             viewModel.uiState.collect {}
@@ -52,9 +54,11 @@ class TrashBoxViewModelTest {
         assertEquals(results.count(), viewModel.uiState.value.results.count())
 
         assertEquals(results[0].text, viewModel.uiState.value.results[0].text)
+        assertFalse(viewModel.uiState.value.results[0].isUrl)
         assertEquals(DateFormat.Today, viewModel.uiState.value.results[0].date)
 
         assertEquals(results[1].text, viewModel.uiState.value.results[1].text)
+        assertTrue(viewModel.uiState.value.results[1].isUrl)
         assertEquals(DateFormat.DaysAgo(1), viewModel.uiState.value.results[1].date)
 
         assertFalse(viewModel.uiState.value.isLoading)

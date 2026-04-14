@@ -12,6 +12,7 @@ import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
 import jp.uhimania.qrreader.domain.DateFormat
 import jp.uhimania.qrreader.domain.FormatDateUseCase
+import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -27,13 +28,15 @@ data class TrashBoxUiState(
         val id: String = "",
         val text: String = "",
         val title: String = "",
+        val isUrl: Boolean = false,
         val date: DateFormat = DateFormat.Today
     )
 }
 
 class TrashBoxViewModel(
     private val repository: ScannedResultRepository,
-    private val formatDateUseCase: FormatDateUseCase
+    private val formatDateUseCase: FormatDateUseCase,
+    private val validateUrlUseCase: ValidateUrlUseCase
 ): ViewModel() {
     val uiState: StateFlow<TrashBoxUiState> =
         repository.getDeletedResultsStream()
@@ -56,6 +59,7 @@ class TrashBoxViewModel(
             id = result.id,
             text = result.text,
             title = result.title,
+            isUrl = validateUrlUseCase(result.text),
             date = formatDateUseCase(result.deletedDate ?: Date())
         )
     }
@@ -77,8 +81,9 @@ class TrashBoxViewModel(
             initializer {
                 val app = this[APPLICATION_KEY] as QRReaderApplication
                 val repository = DefaultScannedResultRepository(app.source)
-                val useCase = FormatDateUseCase()
-                TrashBoxViewModel(repository, useCase)
+                val formatDateUseCase = FormatDateUseCase()
+                val validateUrlUseCase = ValidateUrlUseCase()
+                TrashBoxViewModel(repository, formatDateUseCase, validateUrlUseCase)
             }
         }
     }

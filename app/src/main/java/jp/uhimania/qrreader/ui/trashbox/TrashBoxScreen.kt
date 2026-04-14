@@ -17,6 +17,7 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,8 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -128,56 +131,76 @@ private fun ResultItem(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Row(modifier = modifier) {
-        Column {
-            if (!result.title.isEmpty()) {
-                Text(result.title)
-            }
-            Text(result.text)
-            Text(
-                text = when (result.date) {
-                    is DateFormat.Today -> stringResource(R.string.date_format_today)
-                    is DateFormat.DaysAgo -> stringResource(R.string.date_format_days_ago, result.date.day)
-                    is DateFormat.MonthsAgo -> stringResource(R.string.date_format_months_ago, result.date.month)
-                    is DateFormat.Date -> result.date.date
-                },
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
+    ElevatedCard(modifier = modifier.padding(4.dp)) {
+        Row(modifier = Modifier.padding(8.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                if (!result.title.isEmpty()) {
+                    Text(result.title)
+                }
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        IconButton(
-            onClick = { expanded = !expanded }
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = Icons.Default.MoreVert.name
-            )
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(R.string.label_restore)) },
-                    onClick = {
-                        onRestore(result)
-                        expanded = false
-                    }
-                )
-                HorizontalDivider()
-                DropdownMenuItem(
-                    text = {
+                if (result.isUrl) {
+                    val uriHandler = LocalUriHandler.current
+                    TextButton({ uriHandler.openUri(result.text) }) {
                         Text(
-                            text = stringResource(R.string.label_force_remove),
-                            style = TextStyle.Default.copy(color = Color.Red)
+                            text = result.text,
+                            overflow = TextOverflow.Ellipsis,
+                            softWrap = false
                         )
-                    },
-                    onClick = {
-                        onDelete(result)
-                        expanded = false
                     }
+                } else {
+                    Text(
+                        text = result.text,
+                        style = if (result.title.isEmpty()) {
+                            TextStyle.Default
+                        } else {
+                            MaterialTheme.typography.bodyMedium
+                        }
+                    )
+                }
+
+                Text(
+                    text = when (result.date) {
+                        is DateFormat.Today -> stringResource(R.string.date_format_today)
+                        is DateFormat.DaysAgo -> stringResource(R.string.date_format_days_ago, result.date.day)
+                        is DateFormat.MonthsAgo -> stringResource(R.string.date_format_months_ago, result.date.month)
+                        is DateFormat.Date -> result.date.date
+                    },
+                    style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray)
                 )
+            }
+
+            IconButton(
+                onClick = { expanded = !expanded }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = Icons.Default.MoreVert.name
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.label_restore)) },
+                        onClick = {
+                            onRestore(result)
+                            expanded = false
+                        }
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(R.string.label_force_remove),
+                                style = TextStyle.Default.copy(color = Color.Red)
+                            )
+                        },
+                        onClick = {
+                            onDelete(result)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }
