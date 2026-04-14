@@ -26,7 +26,8 @@ data class QRReaderUiState(
     val decodedText: String? = null,
     val isUrl: Boolean = false,
     val barCodeRect: Rect? = null,
-    val imageSize: Size = Size.Zero
+    val imageSize: Size = Size.Zero,
+    val isLoading: Boolean = false
 )
 
 class QRReaderViewModel(
@@ -60,6 +61,8 @@ class QRReaderViewModel(
 
     fun saveResult() {
         _uiState.value.decodedText?.let {
+            _uiState.update { it.copy(isLoading = true) }
+
             viewModelScope.launch {
                 val title = if (!_uiState.value.isUrl) "" else getPageTitleUseCase(it)
                 val result = ScannedResult(text = it, title = title)
