@@ -20,18 +20,21 @@ class LocalDataSourceTest {
         LocalScannedResult(
             id = "1",
             text = "aaa",
+            title = "title1",
             scannedDate = Date(),
             deletedDate = null
         ),
         LocalScannedResult(
             id = "2",
             text = "bbb",
+            title = "title2",
             scannedDate = Date(),
             deletedDate = Date()
         ),
         LocalScannedResult(
             id = "3",
             text = "ccc",
+            title = "title3",
             scannedDate = Date(),
             deletedDate = null
         )

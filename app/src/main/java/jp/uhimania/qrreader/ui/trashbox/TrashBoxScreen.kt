@@ -130,6 +130,9 @@ private fun ResultItem(
 
     Row(modifier = modifier) {
         Column {
+            if (!result.title.isEmpty()) {
+                Text(result.title)
+            }
             Text(result.text)
             Text(
                 text = when (result.date) {

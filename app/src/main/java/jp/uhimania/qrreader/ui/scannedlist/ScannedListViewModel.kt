@@ -26,6 +26,7 @@ data class ScannedListUiState(
     data class ScannedResult(
         val id: String = "",
         val text: String = "",
+        val title: String = "",
         val isUrl: Boolean = false,
         val date: DateFormat = DateFormat.Today
     )
@@ -62,6 +63,7 @@ class ScannedListViewModel(
         return ScannedListUiState.ScannedResult(
             id = result.id,
             text = result.text,
+            title = result.title,
             isUrl = validateUrlUseCase(result.text),
             date = formatDateUseCase(result.scannedDate)
         )
@@ -70,6 +72,12 @@ class ScannedListViewModel(
     fun remove(result: ScannedListUiState.ScannedResult) {
         viewModelScope.launch {
             repository.markAsDelete(result.id)
+        }
+    }
+
+    fun updateTitle(result: ScannedListUiState.ScannedResult, title: String) {
+        viewModelScope.launch {
+            repository.updateTitle(result.id, title)
         }
     }
 

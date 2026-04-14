@@ -15,4 +15,7 @@
     <string name="text_confirm_delete">完全に削除すると復元できません。\nよろしいですか？</string>
     <string name="caption_cancel">キャンセル</string>
     <string name="caption_delete">削除</string>
+    <string name="label_edit_title">タイトルを編集</string>
+    <string name="caption_ok">OK</string>
+    <string name="text_entry_title">タイトルを入力してください</string>
 </resources>

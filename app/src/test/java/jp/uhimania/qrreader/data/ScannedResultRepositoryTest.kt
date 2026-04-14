@@ -44,6 +44,7 @@ class ScannedResultRepositoryTest {
             LocalScannedResult(
                 id = "1",
                 text = "aaa",
+                title = "title1",
                 scannedDate = Date(),
                 deletedDate = null
             )
@@ -60,12 +61,14 @@ class ScannedResultRepositoryTest {
             LocalScannedResult(
                 id = "2",
                 text = "bbb",
+                title = "title2",
                 scannedDate = Date(),
                 deletedDate = null
             ),
             LocalScannedResult(
                 id = "3",
                 text = "ccc",
+                title = "title3",
                 scannedDate = Date(),
                 deletedDate = Date()
             )
@@ -75,11 +78,13 @@ class ScannedResultRepositoryTest {
         assertEquals(1, values[0].count())
         assertEquals(records1[0].id, values[0][0].id)
         assertEquals(records1[0].text, values[0][0].text)
+        assertEquals(records1[0].title, values[0][0].title)
         assertEquals(records1[0].scannedDate, values[0][0].scannedDate)
         assertEquals(records1[0].deletedDate, values[0][0].deletedDate)
         assertEquals(1, values[1].count())
         assertEquals(records2[0].id, values[1][0].id)
         assertEquals(records2[0].text, values[1][0].text)
+        assertEquals(records2[0].title, values[1][0].title)
         assertEquals(records2[0].scannedDate, values[1][0].scannedDate)
         assertEquals(records2[0].deletedDate, values[1][0].deletedDate)
     }
@@ -101,6 +106,7 @@ class ScannedResultRepositoryTest {
             LocalScannedResult(
                 id = "1",
                 text = "aaa",
+                title = "title1",
                 scannedDate = Date(),
                 deletedDate = null
             )
@@ -113,12 +119,14 @@ class ScannedResultRepositoryTest {
             LocalScannedResult(
                 id = "2",
                 text = "bbb",
+                title = "title2",
                 scannedDate = Date(),
                 deletedDate = null
             ),
             LocalScannedResult(
                 id = "3",
                 text = "ccc",
+                title = "title3",
                 scannedDate = Date(),
                 deletedDate = Date()
             )
@@ -129,6 +137,7 @@ class ScannedResultRepositoryTest {
         assertEquals(1, values[1].count())
         assertEquals(records2[1].id, values[1][0].id)
         assertEquals(records2[1].text, values[1][0].text)
+        assertEquals(records2[1].title, values[1][0].title)
         assertEquals(records2[1].scannedDate, values[1][0].scannedDate)
         assertEquals(records2[1].deletedDate, values[1][0].deletedDate)
     }
@@ -141,18 +150,21 @@ class ScannedResultRepositoryTest {
         val result = ScannedResult(
             id = "1",
             text = "aaa",
+            title = "title1",
             scannedDate = Date(),
             deletedDate = Date()
         )
         repository.saveResult(result)
         assertEquals(result.id, source.upserted?.id)
         assertEquals(result.text, source.upserted?.text)
+        assertEquals(result.title, source.upserted?.title)
         assertEquals(result.scannedDate, source.upserted?.scannedDate)
         assertEquals(result.deletedDate, source.upserted?.deletedDate)
 
         repository.saveResult(result.copy(text = "bbb"))
         assertEquals(result.id, source.upserted?.id)
         assertEquals("bbb", source.upserted?.text)
+        assertEquals(result.title, source.upserted?.title)
         assertEquals(result.scannedDate, source.upserted?.scannedDate)
         assertEquals(result.deletedDate, source.upserted?.deletedDate)
     }
@@ -166,6 +178,7 @@ class ScannedResultRepositoryTest {
         repository.markAsDelete(id)
         assertEquals(id, source.updated?.id)
         assertEquals(source.result.text, source.updated?.text)
+        assertEquals(source.result.title, source.updated?.title)
         assertEquals(source.result.scannedDate, source.updated?.scannedDate)
         assertNotNull(source.updated?.deletedDate)
         assertTrue(Date().time - (source.updated?.deletedDate?.time ?: 0) < 1000)
@@ -173,6 +186,7 @@ class ScannedResultRepositoryTest {
         repository.unmarkAsDelete(id)
         assertEquals(id, source.updated?.id)
         assertEquals(source.result.text, source.updated?.text)
+        assertEquals(source.result.title, source.updated?.title)
         assertEquals(source.result.scannedDate, source.updated?.scannedDate)
         assertNull(source.updated?.deletedDate)
     }
@@ -198,6 +212,18 @@ class ScannedResultRepositoryTest {
         assertEquals("3", source.deleted[0].id)
     }
 
+    @Test
+    fun testUpdateTitle() = runTest {
+        val source = FakeLocalDataSource()
+        val repository = DefaultScannedResultRepository(source)
+
+        val id = "1"
+        val title = "title"
+        repository.updateTitle(id, title)
+        assertEquals(id, source.updated?.id)
+        assertEquals(title, source.updated?.title)
+    }
+
     class FakeLocalDataSource : LocalDataSource {
         val flow = MutableSharedFlow<List<LocalScannedResult>>()
         override fun observeResults(): Flow<List<LocalScannedResult>> {
@@ -208,18 +234,21 @@ class ScannedResultRepositoryTest {
             LocalScannedResult(
                 id = "1",
                 text = "",
+                title = "",
                 scannedDate = Date(),
                 deletedDate = null
             ),
             LocalScannedResult(
                 id = "2",
                 text = "",
+                title = "",
                 scannedDate = Date(),
                 deletedDate = Date(Date().time - 30L * 24 * 60 * 60 * 1000 + 1000)
             ),
             LocalScannedResult(
                 id = "3",
                 text = "",
+                title = "",
                 scannedDate = Date(),
                 deletedDate = Date(Date().time - 30L * 24 * 60 * 60 * 1000 - 1000)
             )
@@ -231,6 +260,7 @@ class ScannedResultRepositoryTest {
         val result = LocalScannedResult(
             id = "",
             text = "aaa",
+            title = "title1",
             scannedDate = Date(),
             deletedDate = null
         )

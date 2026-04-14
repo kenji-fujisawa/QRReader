@@ -18,6 +18,7 @@ interface ScannedResultRepository {
     suspend fun unmarkAsDelete(id: String)
     suspend fun forceDelete(id: String)
     suspend fun purgeExpired()
+    suspend fun updateTitle(id: String, title: String)
 }
 
 class DefaultScannedResultRepository(
@@ -74,12 +75,20 @@ class DefaultScannedResultRepository(
             .filter { it.deletedDate!! < calendar.time }
             .forEach { source.delete(it) }
     }
+
+    override suspend fun updateTitle(id: String, title: String) {
+        source.getResult(id)?.let {
+            val result = it.copy(title = title)
+            source.update(result)
+        }
+    }
 }
 
 fun ScannedResult.asLocal(): LocalScannedResult {
     return LocalScannedResult(
         id = this.id,
         text = this.text,
+        title = this.title,
         scannedDate = this.scannedDate,
         deletedDate = this.deletedDate
     )
@@ -89,6 +98,7 @@ fun LocalScannedResult.asResult(): ScannedResult {
     return ScannedResult(
         id = this.id,
         text = this.text,
+        title = this.title,
         scannedDate = this.scannedDate,
         deletedDate = this.deletedDate
     )

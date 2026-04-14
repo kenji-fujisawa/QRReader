@@ -8,25 +8,30 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,6 +64,7 @@ fun ScannedListScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var selectedItem by remember { mutableStateOf<ScannedListUiState.ScannedResult?>(null) }
 
     Scaffold(
         modifier = modifier,
@@ -113,10 +119,22 @@ fun ScannedListScreen(
                 items(uiState.results) { result ->
                     ResultItem(
                         result = result,
+                        onEditTitle = { selectedItem = it },
                         onRemove = { viewModel.remove(it) },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
+            }
+
+            selectedItem?.let {
+                TitleEditDialog(
+                    title = it.title,
+                    onDismissRequest = { selectedItem = null },
+                    onTitleFixed = { title ->
+                        viewModel.updateTitle(it, title)
+                        selectedItem = null
+                    }
+                )
             }
         }
     }
@@ -125,6 +143,7 @@ fun ScannedListScreen(
 @Composable
 private fun ResultItem(
     result: ScannedListUiState.ScannedResult,
+    onEditTitle: (ScannedListUiState.ScannedResult) -> Unit,
     onRemove: (ScannedListUiState.ScannedResult) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -132,6 +151,9 @@ private fun ResultItem(
 
     Row(modifier = modifier) {
         Column {
+            if (!result.title.isEmpty()) {
+                Text(result.title)
+            }
             Text(result.text)
             Text(
                 text = when (result.date) {
@@ -180,12 +202,57 @@ private fun ResultItem(
                 onDismissRequest = { expanded = false }
             ) {
                 DropdownMenuItem(
+                    text = { Text(stringResource(R.string.label_edit_title)) },
+                    onClick = {
+                        onEditTitle(result)
+                        expanded = false
+                    }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
                     text = { Text(stringResource(R.string.label_remove)) },
                     onClick = {
                         onRemove(result)
                         expanded = false
                     }
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TitleEditDialog(
+    title: String,
+    onDismissRequest: () -> Unit,
+    onTitleFixed: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var text by remember { mutableStateOf(title) }
+
+    BasicAlertDialog(
+        onDismissRequest = onDismissRequest,
+        modifier = modifier
+    ) {
+        Surface(
+            modifier = Modifier.wrapContentSize(),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(Modifier.padding(16.dp)) {
+                TextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text(stringResource(R.string.text_entry_title)) }
+                )
+                Row(Modifier.align(Alignment.End)) {
+                    TextButton(onDismissRequest) {
+                        Text(stringResource(R.string.caption_cancel))
+                    }
+                    TextButton({ onTitleFixed(text) }) {
+                        Text(stringResource(R.string.caption_ok))
+                    }
+                }
             }
         }
     }
@@ -198,7 +265,20 @@ private fun ResultItemPreview() {
         val result = ScannedListUiState.ScannedResult(text = "aaa")
         ResultItem(
             result = result,
+            onEditTitle = {},
             onRemove = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TitleEditDialogPreview() {
+    QRReaderTheme {
+        TitleEditDialog(
+            title = "title",
+            onDismissRequest = {},
+            onTitleFixed = {}
         )
     }
 }

@@ -26,6 +26,7 @@ data class TrashBoxUiState(
     data class ScannedResult(
         val id: String = "",
         val text: String = "",
+        val title: String = "",
         val date: DateFormat = DateFormat.Today
     )
 }
@@ -54,6 +55,7 @@ class TrashBoxViewModel(
         return TrashBoxUiState.ScannedResult(
             id = result.id,
             text = result.text,
+            title = result.title,
             date = formatDateUseCase(result.deletedDate ?: Date())
         )
     }
