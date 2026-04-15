@@ -10,9 +10,9 @@ import jp.uhimania.qrreader.QRReaderApplication
 import jp.uhimania.qrreader.data.DefaultScannedResultRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
-import jp.uhimania.qrreader.domain.DateFormat
 import jp.uhimania.qrreader.domain.FormatDateUseCase
 import jp.uhimania.qrreader.domain.ValidateUrlUseCase
+import jp.uhimania.qrreader.ui.common.ScannedResultUiState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -20,17 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ScannedListUiState(
-    val results: List<ScannedResult> = listOf(),
+    val results: List<ScannedResultUiState> = listOf(),
     val isLoading: Boolean = false
-) {
-    data class ScannedResult(
-        val id: String = "",
-        val text: String = "",
-        val title: String = "",
-        val isUrl: Boolean = false,
-        val date: DateFormat = DateFormat.Today
-    )
-}
+)
 
 class ScannedListViewModel(
     private val repository: ScannedResultRepository,
@@ -59,8 +51,8 @@ class ScannedListViewModel(
         }
     }
 
-    private fun toUiState(result: ScannedResult): ScannedListUiState.ScannedResult {
-        return ScannedListUiState.ScannedResult(
+    private fun toUiState(result: ScannedResult): ScannedResultUiState {
+        return ScannedResultUiState(
             id = result.id,
             text = result.text,
             title = result.title,
@@ -69,15 +61,15 @@ class ScannedListViewModel(
         )
     }
 
-    fun remove(result: ScannedListUiState.ScannedResult) {
+    fun remove(id: String) {
         viewModelScope.launch {
-            repository.markAsDelete(result.id)
+            repository.markAsDelete(id)
         }
     }
 
-    fun updateTitle(result: ScannedListUiState.ScannedResult, title: String) {
+    fun updateTitle(id: String, title: String) {
         viewModelScope.launch {
-            repository.updateTitle(result.id, title)
+            repository.updateTitle(id, title)
         }
     }
 

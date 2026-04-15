@@ -10,9 +10,9 @@ import jp.uhimania.qrreader.QRReaderApplication
 import jp.uhimania.qrreader.data.DefaultScannedResultRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
-import jp.uhimania.qrreader.domain.DateFormat
 import jp.uhimania.qrreader.domain.FormatDateUseCase
 import jp.uhimania.qrreader.domain.ValidateUrlUseCase
+import jp.uhimania.qrreader.ui.common.ScannedResultUiState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -21,17 +21,9 @@ import kotlinx.coroutines.launch
 import java.util.Date
 
 data class TrashBoxUiState(
-    val results: List<ScannedResult> = listOf(),
+    val results: List<ScannedResultUiState> = listOf(),
     val isLoading: Boolean = false
-) {
-    data class ScannedResult(
-        val id: String = "",
-        val text: String = "",
-        val title: String = "",
-        val isUrl: Boolean = false,
-        val date: DateFormat = DateFormat.Today
-    )
-}
+)
 
 class TrashBoxViewModel(
     private val repository: ScannedResultRepository,
@@ -54,8 +46,8 @@ class TrashBoxViewModel(
                 initialValue = TrashBoxUiState(isLoading = true)
             )
 
-    private fun toUiState(result: ScannedResult): TrashBoxUiState.ScannedResult {
-        return TrashBoxUiState.ScannedResult(
+    private fun toUiState(result: ScannedResult): ScannedResultUiState {
+        return ScannedResultUiState(
             id = result.id,
             text = result.text,
             title = result.title,
@@ -64,15 +56,15 @@ class TrashBoxViewModel(
         )
     }
 
-    fun restore(result: TrashBoxUiState.ScannedResult) {
+    fun restore(id: String) {
         viewModelScope.launch {
-            repository.unmarkAsDelete(result.id)
+            repository.unmarkAsDelete(id)
         }
     }
 
-    fun forceRemove(result: TrashBoxUiState.ScannedResult) {
+    fun forceRemove(id: String) {
         viewModelScope.launch {
-            repository.forceDelete(result.id)
+            repository.forceDelete(id)
         }
     }
 

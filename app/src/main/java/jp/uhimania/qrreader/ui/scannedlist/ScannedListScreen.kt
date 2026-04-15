@@ -18,7 +18,6 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -41,19 +40,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import jp.uhimania.qrreader.R
-import jp.uhimania.qrreader.domain.DateFormat
 import jp.uhimania.qrreader.ui.common.LoadingScreen
+import jp.uhimania.qrreader.ui.common.ScannedResultCard
+import jp.uhimania.qrreader.ui.common.ScannedResultUiState
 import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 import kotlinx.coroutines.launch
 
@@ -67,7 +63,7 @@ fun ScannedListScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedItem by remember { mutableStateOf<ScannedListUiState.ScannedResult?>(null) }
+    var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
 
     Scaffold(
         modifier = modifier,
@@ -123,7 +119,7 @@ fun ScannedListScreen(
                     ResultItem(
                         result = result,
                         onEditTitle = { selectedItem = it },
-                        onRemove = { viewModel.remove(it) },
+                        onRemove = { viewModel.remove(it.id) },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
@@ -134,7 +130,7 @@ fun ScannedListScreen(
                     title = it.title,
                     onDismissRequest = { selectedItem = null },
                     onTitleFixed = { title ->
-                        viewModel.updateTitle(it, title)
+                        viewModel.updateTitle(it.id, title)
                         selectedItem = null
                     }
                 )
@@ -145,89 +141,54 @@ fun ScannedListScreen(
 
 @Composable
 private fun ResultItem(
-    result: ScannedListUiState.ScannedResult,
-    onEditTitle: (ScannedListUiState.ScannedResult) -> Unit,
-    onRemove: (ScannedListUiState.ScannedResult) -> Unit,
+    result: ScannedResultUiState,
+    onEditTitle: (ScannedResultUiState) -> Unit,
+    onRemove: (ScannedResultUiState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    ElevatedCard(modifier = modifier.padding(4.dp)) {
-        Row(modifier = Modifier.padding(8.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                if (!result.title.isEmpty()) {
-                    Text(result.title)
-                }
+    ScannedResultCard(
+        uiState = result,
+        modifier = modifier
+    ) {
+        IconButton({ expanded = !expanded }) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = Icons.Default.MoreVert.name
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                val clipboard = LocalClipboard.current
+                val scope = rememberCoroutineScope()
 
-                if (result.isUrl) {
-                    val uriHandler = LocalUriHandler.current
-                    TextButton({ uriHandler.openUri(result.text) }) {
-                        Text(
-                            text = result.text,
-                            overflow = TextOverflow.Ellipsis,
-                            softWrap = false
-                        )
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.label_edit_title)) },
+                    onClick = {
+                        onEditTitle(result)
+                        expanded = false
                     }
-                } else {
-                    Text(
-                        text = result.text,
-                        style = if (result.title.isEmpty()) {
-                            TextStyle.Default
-                        } else {
-                            MaterialTheme.typography.bodyMedium
-                        }
-                    )
-                }
-
-                Text(
-                    text = when (result.date) {
-                        is DateFormat.Today -> stringResource(R.string.date_format_today)
-                        is DateFormat.DaysAgo -> stringResource(R.string.date_format_days_ago, result.date.day)
-                        is DateFormat.MonthsAgo -> stringResource(R.string.date_format_months_ago, result.date.month)
-                        is DateFormat.Date -> result.date.date
-                    },
-                    style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray)
                 )
-            }
-
-            IconButton({ expanded = !expanded }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = Icons.Default.MoreVert.name
-                )
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    val clipboard = LocalClipboard.current
-                    val scope = rememberCoroutineScope()
-
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.label_edit_title)) },
-                        onClick = {
-                            onEditTitle(result)
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_label_copy)) },
+                    onClick = {
+                        scope.launch {
+                            val data = ClipData.newPlainText(result.text, result.text)
+                            clipboard.setClipEntry(data.toClipEntry())
                             expanded = false
                         }
-                    )
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.action_label_copy)) },
-                        onClick = {
-                            scope.launch {
-                                val data = ClipData.newPlainText(result.text, result.text)
-                                clipboard.setClipEntry(data.toClipEntry())
-                                expanded = false
-                            }
-                        }
-                    )
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.label_remove)) },
-                        onClick = {
-                            onRemove(result)
-                            expanded = false
-                        }
-                    )
-                }
+                    }
+                )
+                HorizontalDivider()
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.label_remove)) },
+                    onClick = {
+                        onRemove(result)
+                        expanded = false
+                    }
+                )
             }
         }
     }
@@ -274,7 +235,7 @@ private fun TitleEditDialog(
 @Composable
 private fun ResultItemPreview() {
     QRReaderTheme {
-        val result = ScannedListUiState.ScannedResult(text = "aaa")
+        val result = ScannedResultUiState(text = "aaa")
         ResultItem(
             result = result,
             onEditTitle = {},
