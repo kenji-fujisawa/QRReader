@@ -62,6 +62,7 @@ fun TrashBoxScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
+    var showConfirmBulkRemove by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -116,8 +117,11 @@ fun TrashBoxScreen(
                     TrashBoxScreenState.ForceRemoveMode -> {
                         FloatingActionButton(
                             onClick = {
-                                viewModel.forceRemoveSelected()
-                                viewModel.setScreenState(TrashBoxScreenState.Normal)
+                                if (uiState.results.count { res -> res.selected } > 0) {
+                                    showConfirmBulkRemove = true
+                                } else {
+                                    viewModel.setScreenState(TrashBoxScreenState.Normal)
+                                }
                             },
                             containerColor = MaterialTheme.colorScheme.errorContainer
                         ) {
@@ -174,6 +178,17 @@ fun TrashBoxScreen(
                     onConfirmDelete = {
                         viewModel.forceRemove(it.id)
                         selectedItem = null
+                    }
+                )
+            }
+
+            if (showConfirmBulkRemove) {
+                ConfirmDialog(
+                    onDismissRequest = { showConfirmBulkRemove = false },
+                    onConfirmDelete = {
+                        viewModel.forceRemoveSelected()
+                        viewModel.setScreenState(TrashBoxScreenState.Normal)
+                        showConfirmBulkRemove = false
                     }
                 )
             }
