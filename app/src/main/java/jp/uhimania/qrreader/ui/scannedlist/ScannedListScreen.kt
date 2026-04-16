@@ -1,6 +1,7 @@
 package jp.uhimania.qrreader.ui.scannedlist
 
 import android.content.ClipData
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.BasicAlertDialog
@@ -53,7 +55,6 @@ import jp.uhimania.qrreader.ui.common.ScannedResultUiState
 import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScannedListScreen(
     onStartScanning: () -> Unit,
@@ -69,29 +70,53 @@ fun ScannedListScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(stringResource(R.string.title_scanned_list))
-                },
-                actions = {
-                    IconButton(onClick = onMoveToTrashBox) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = Icons.Default.Delete.name
+            AnimatedContent(targetState = uiState.state) {
+                when (it) {
+                    ScannedListScreenState.Normal -> {
+                        DefaultAppBar(
+                            results = uiState.results,
+                            onEnterRemoveMode = { viewModel.setScreenState(ScannedListScreenState.RemoveMode) },
+                            onMoveToTrashBox = onMoveToTrashBox
+                        )
+                    }
+                    ScannedListScreenState.RemoveMode -> {
+                        RemoveModeAppBar(
+                            onExitRemoveMode = {
+                                viewModel.setScreenState(ScannedListScreenState.Normal)
+                                viewModel.clearSelection()
+                            }
                         )
                     }
                 }
-            )
+            }
         },
         floatingActionButton = {
             AnimatedVisibility(!uiState.isLoading) {
-                FloatingActionButton(
-                    onClick = onStartScanning
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = Icons.Filled.Add.name
-                    )
+                AnimatedContent(targetState = uiState.state) {
+                    when (it) {
+                        ScannedListScreenState.Normal -> {
+                            FloatingActionButton(onClick = onStartScanning) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = Icons.Filled.Add.name
+                                )
+                            }
+                        }
+                        ScannedListScreenState.RemoveMode -> {
+                            FloatingActionButton(
+                                onClick = {
+                                    viewModel.removeSelected()
+                                    viewModel.setScreenState(ScannedListScreenState.Normal)
+                                },
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = Icons.Default.Delete.name
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -118,6 +143,14 @@ fun ScannedListScreen(
                 items(uiState.results) { result ->
                     ResultItem(
                         result = result,
+                        showCheckBox = uiState.state == ScannedListScreenState.RemoveMode,
+                        onCheckChange = {
+                            if (it) {
+                                viewModel.select(result.id)
+                            } else {
+                                viewModel.unselect(result.id)
+                            }
+                        },
                         onEditTitle = { selectedItem = it },
                         onRemove = { viewModel.remove(it.id) },
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -139,9 +172,75 @@ fun ScannedListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DefaultAppBar(
+    results: List<ScannedResultUiState>,
+    onEnterRemoveMode: () -> Unit,
+    onMoveToTrashBox: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    CenterAlignedTopAppBar(
+        title = { Text(stringResource(R.string.title_scanned_list)) },
+        modifier = modifier,
+        actions = {
+            var expanded by remember { mutableStateOf(false) }
+
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = Icons.Default.MoreVert.name
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.title_remove_mode)) },
+                        onClick = {
+                            onEnterRemoveMode()
+                            expanded = false
+                        },
+                        enabled = !results.isEmpty()
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.title_trash_box)) },
+                        onClick = {
+                            onMoveToTrashBox()
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RemoveModeAppBar(
+    onExitRemoveMode: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    CenterAlignedTopAppBar(
+        title = { Text(stringResource(R.string.title_remove_mode)) },
+        modifier = modifier,
+        actions = {
+            IconButton(onClick = onExitRemoveMode) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = Icons.Default.Check.name
+                )
+            }
+        }
+    )
+}
+
 @Composable
 private fun ResultItem(
     result: ScannedResultUiState,
+    showCheckBox: Boolean,
+    onCheckChange: (Boolean) -> Unit,
     onEditTitle: (ScannedResultUiState) -> Unit,
     onRemove: (ScannedResultUiState) -> Unit,
     modifier: Modifier = Modifier
@@ -150,6 +249,8 @@ private fun ResultItem(
 
     ScannedResultCard(
         uiState = result,
+        showCheckBox = showCheckBox,
+        onCheckChange = onCheckChange,
         modifier = modifier
     ) {
         IconButton({ expanded = !expanded }) {
@@ -238,6 +339,8 @@ private fun ResultItemPreview() {
         val result = ScannedResultUiState(text = "aaa")
         ResultItem(
             result = result,
+            showCheckBox = false,
+            onCheckChange = {},
             onEditTitle = {},
             onRemove = {}
         )

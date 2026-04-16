@@ -131,6 +131,8 @@ private fun ResultItem(
 
     ScannedResultCard(
         uiState = result,
+        showCheckBox = false,
+        onCheckChange = {},
         modifier = modifier
     ) {
         IconButton({ expanded = !expanded }) {

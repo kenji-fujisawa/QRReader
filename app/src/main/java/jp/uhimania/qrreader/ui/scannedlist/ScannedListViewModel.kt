@@ -13,15 +13,24 @@ import jp.uhimania.qrreader.data.ScannedResultRepository
 import jp.uhimania.qrreader.domain.FormatDateUseCase
 import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import jp.uhimania.qrreader.ui.common.ScannedResultUiState
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+enum class ScannedListScreenState{
+    Normal,
+    RemoveMode
+}
 
 data class ScannedListUiState(
     val results: List<ScannedResultUiState> = listOf(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val state: ScannedListScreenState = ScannedListScreenState.Normal
 )
 
 class ScannedListViewModel(
@@ -29,16 +38,20 @@ class ScannedListViewModel(
     private val formatDateUseCase: FormatDateUseCase,
     private val validateUrlUseCase: ValidateUrlUseCase
 ) : ViewModel() {
+    private val _results = repository.getResultsStream()
+        .map { results -> results.sortedByDescending { it.scannedDate } }
+
+    private val _state = MutableStateFlow(ScannedListScreenState.Normal)
+    private val _selected = MutableStateFlow<Set<String>>(setOf())
+
     val uiState: StateFlow<ScannedListUiState> =
-        repository.getResultsStream()
-            .map { results ->
-                ScannedListUiState(
-                    results = results
-                        .sortedByDescending { it.scannedDate }
-                        .map { toUiState(it) },
-                    isLoading = false
-                )
-            }
+        combine(_results, _state, _selected) { results, state, _ ->
+            ScannedListUiState(
+                results = results.map { toUiState(it) },
+                isLoading = false,
+                state = state
+            )
+        }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -57,7 +70,8 @@ class ScannedListViewModel(
             text = result.text,
             title = result.title,
             isUrl = validateUrlUseCase(result.text),
-            date = formatDateUseCase(result.scannedDate)
+            date = formatDateUseCase(result.scannedDate),
+            selected = _selected.value.contains(result.id)
         )
     }
 
@@ -71,6 +85,31 @@ class ScannedListViewModel(
         viewModelScope.launch {
             repository.updateTitle(id, title)
         }
+    }
+
+    fun setScreenState(state: ScannedListScreenState) {
+        _state.update { state }
+    }
+
+    fun select(id: String) {
+        _selected.update { it + id }
+    }
+
+    fun unselect(id: String) {
+        _selected.update { it - id }
+    }
+
+    fun removeSelected() {
+        viewModelScope.launch {
+            _selected.value.forEach {
+                repository.markAsDelete(it)
+            }
+            clearSelection()
+        }
+    }
+
+    fun clearSelection() {
+        _selected.update { setOf() }
     }
 
     companion object {

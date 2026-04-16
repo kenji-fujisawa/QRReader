@@ -7,5 +7,6 @@ data class ScannedResultUiState(
     val text: String = "",
     val title: String = "",
     val isUrl: Boolean = false,
-    val date: DateFormat = DateFormat.Today
+    val date: DateFormat = DateFormat.Today,
+    val selected: Boolean = false
 )

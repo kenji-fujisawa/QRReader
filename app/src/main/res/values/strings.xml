@@ -8,7 +8,7 @@
     <string name="date_format_months_ago">%d ヶ月前</string>
     <string name="label_remove">削除</string>
     <string name="title_scanned_list">読み取り履歴</string>
-    <string name="title_trash_box">削除済みアイテム</string>
+    <string name="title_trash_box">最近削除した項目</string>
     <string name="no_deleted_items">30 日経過するとゴミ箱から削除されます</string>
     <string name="label_restore">元に戻す</string>
     <string name="label_force_remove">完全に削除</string>
@@ -18,4 +18,5 @@
     <string name="label_edit_title">タイトルを編集</string>
     <string name="caption_ok">OK</string>
     <string name="text_entry_title">タイトルを入力してください</string>
+    <string name="title_remove_mode">まとめて削除</string>
 </resources>

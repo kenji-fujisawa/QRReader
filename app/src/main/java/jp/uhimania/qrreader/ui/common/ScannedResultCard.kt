@@ -1,5 +1,6 @@
 package jp.uhimania.qrreader.ui.common
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
@@ -30,6 +33,8 @@ import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 @Composable
 fun ScannedResultCard(
     uiState: ScannedResultUiState,
+    showCheckBox: Boolean,
+    onCheckChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     menu: @Composable () -> Unit
 ) {
@@ -39,6 +44,16 @@ fun ScannedResultCard(
                 .height(IntrinsicSize.Min)
                 .padding(8.dp)
         ) {
+            AnimatedVisibility(
+                visible = showCheckBox,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            ) {
+                Checkbox(
+                    checked = uiState.selected,
+                    onCheckedChange = onCheckChange
+                )
+            }
+
             Column(modifier = Modifier.weight(1f)) {
                 if (!uiState.title.isEmpty()) {
                     Text(uiState.title)
@@ -87,7 +102,11 @@ fun ScannedResultCard(
 private fun ScannedResultCardPreview() {
     QRReaderTheme {
         val uiState = ScannedResultUiState(text = "aaa")
-        ScannedResultCard(uiState) {
+        ScannedResultCard(
+            uiState = uiState,
+            showCheckBox = true,
+            onCheckChange = {}
+        ) {
             IconButton({}) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
