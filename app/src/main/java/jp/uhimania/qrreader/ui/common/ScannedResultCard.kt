@@ -61,7 +61,10 @@ fun ScannedResultCard(
 
                 if (uiState.isUrl) {
                     val uriHandler = LocalUriHandler.current
-                    TextButton({ uriHandler.openUri(uiState.text) }) {
+                    TextButton(
+                        onClick = { uriHandler.openUri(uiState.text) },
+                        enabled = !showCheckBox
+                    ) {
                         Text(
                             text = uiState.text,
                             overflow = TextOverflow.Ellipsis,
@@ -92,7 +95,9 @@ fun ScannedResultCard(
                 )
             }
 
-            menu()
+            AnimatedVisibility(!showCheckBox) {
+                menu()
+            }
         }
     }
 }
