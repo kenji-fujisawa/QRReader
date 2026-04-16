@@ -1,5 +1,6 @@
 package jp.uhimania.qrreader.ui.trashbox
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,7 +53,6 @@ import jp.uhimania.qrreader.ui.common.ScannedResultCard
 import jp.uhimania.qrreader.ui.common.ScannedResultUiState
 import jp.uhimania.qrreader.ui.theme.QRReaderTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrashBoxScreen(
     onBack: () -> Unit,
@@ -56,28 +60,77 @@ fun TrashBoxScreen(
     viewModel: TrashBoxViewModel = viewModel(factory = TrashBoxViewModel.Factory),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
+
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(stringResource(R.string.title_trash_box))
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = Icons.AutoMirrored.Filled.ArrowBack.name
+            AnimatedContent(targetState = uiState.state) {
+                when (it) {
+                    TrashBoxScreenState.Normal -> {
+                        DefaultAppBar(
+                            results = uiState.results,
+                            onBack = onBack,
+                            onEnterRestoreMode = { viewModel.setScreenState(TrashBoxScreenState.RestoreMode) },
+                            onEnterRemoveMode = { viewModel.setScreenState(TrashBoxScreenState.ForceRemoveMode) }
+                        )
+                    }
+                    TrashBoxScreenState.RestoreMode -> {
+                        RestoreModeAppBar(
+                            onExitRestoreMode = {
+                                viewModel.setScreenState(TrashBoxScreenState.Normal)
+                                viewModel.clearSelection()
+                            }
+                        )
+                    }
+                    TrashBoxScreenState.ForceRemoveMode -> {
+                        RemoveModeAppBar(
+                            onExitRemoveMode = {
+                                viewModel.setScreenState(TrashBoxScreenState.Normal)
+                                viewModel.clearSelection()
+                            }
                         )
                     }
                 }
-            )
+            }
+        },
+        floatingActionButton = {
+            AnimatedContent(targetState = uiState.state) {
+                when (it) {
+                    TrashBoxScreenState.Normal -> {}
+                    TrashBoxScreenState.RestoreMode -> {
+                        FloatingActionButton(
+                            onClick = {
+                                viewModel.restoreSelected()
+                                viewModel.setScreenState(TrashBoxScreenState.Normal)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Restore,
+                                contentDescription = Icons.Default.Restore.name
+                            )
+                        }
+                    }
+                    TrashBoxScreenState.ForceRemoveMode -> {
+                        FloatingActionButton(
+                            onClick = {
+                                viewModel.forceRemoveSelected()
+                                viewModel.setScreenState(TrashBoxScreenState.Normal)
+                            },
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = Icons.Default.Delete.name
+                            )
+                        }
+                    }
+                }
+            }
         }
     ) { innerPadding ->
-        val uiState by viewModel.uiState.collectAsState()
-        var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
-
         if (uiState.isLoading) {
             LoadingScreen(
                 modifier = Modifier
@@ -100,6 +153,14 @@ fun TrashBoxScreen(
                 items(uiState.results) { result ->
                     ResultItem(
                         result = result,
+                        showCheckBox = uiState.state == TrashBoxScreenState.RestoreMode || uiState.state == TrashBoxScreenState.ForceRemoveMode,
+                        onCheckChange = {
+                            if (it) {
+                                viewModel.select(result.id)
+                            } else {
+                                viewModel.unselect(result.id)
+                            }
+                        },
                         onRestore = { viewModel.restore(it.id) },
                         onDelete = { selectedItem = it },
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -120,9 +181,120 @@ fun TrashBoxScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DefaultAppBar(
+    results: List<ScannedResultUiState>,
+    onBack: () -> Unit,
+    onEnterRestoreMode: () -> Unit,
+    onEnterRemoveMode: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    CenterAlignedTopAppBar(
+        title = { Text(stringResource(R.string.title_trash_box)) },
+        modifier = modifier,
+        navigationIcon = {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = Icons.AutoMirrored.Filled.ArrowBack.name
+                )
+            }
+        },
+        actions = {
+            var expanded by remember { mutableStateOf(false) }
+
+            IconButton(onClick = { expanded = !expanded}) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = Icons.Default.MoreVert.name
+                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.title_restore_mode)) },
+                        onClick = {
+                            onEnterRestoreMode()
+                            expanded = false
+                        },
+                        enabled = !results.isEmpty()
+                    )
+                    HorizontalDivider()
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(R.string.title_remove_mode),
+                                style = if (results.isEmpty()) {
+                                    TextStyle.Default
+                                } else {
+                                    TextStyle.Default.copy(color = Color.Red)
+                                }
+                            )
+                        },
+                        onClick = {
+                            onEnterRemoveMode()
+                            expanded = false
+                        },
+                        enabled = !results.isEmpty()
+                    )
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RestoreModeAppBar(
+    onExitRestoreMode: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    CenterAlignedTopAppBar(
+        title = { Text(stringResource(R.string.title_restore_mode)) },
+        modifier = modifier,
+        actions = {
+            IconButton(onClick = onExitRestoreMode) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = Icons.Default.Check.name
+                )
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RemoveModeAppBar(
+    onExitRemoveMode: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = stringResource(R.string.title_remove_mode),
+                color = Color.Red
+            )
+        },
+        modifier = modifier,
+        actions = {
+            IconButton(onClick = onExitRemoveMode) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = Icons.Default.Check.name
+                )
+            }
+        }
+    )
+}
+
 @Composable
 private fun ResultItem(
     result: ScannedResultUiState,
+    showCheckBox: Boolean,
+    onCheckChange: (Boolean) -> Unit,
     onRestore: (ScannedResultUiState) -> Unit,
     onDelete: (ScannedResultUiState) -> Unit,
     modifier: Modifier = Modifier
@@ -131,8 +303,8 @@ private fun ResultItem(
 
     ScannedResultCard(
         uiState = result,
-        showCheckBox = false,
-        onCheckChange = {},
+        showCheckBox = showCheckBox,
+        onCheckChange = onCheckChange,
         modifier = modifier
     ) {
         IconButton({ expanded = !expanded }) {
@@ -212,6 +384,8 @@ private fun ResultItemPreview() {
         val result = ScannedResultUiState(text = "aaa")
         ResultItem(
             result = result,
+            showCheckBox = false,
+            onCheckChange = {},
             onRestore = {},
             onDelete = {}
         )

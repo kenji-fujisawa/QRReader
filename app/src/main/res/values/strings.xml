@@ -19,4 +19,5 @@
     <string name="caption_ok">OK</string>
     <string name="text_entry_title">タイトルを入力してください</string>
     <string name="title_remove_mode">まとめて削除</string>
+    <string name="title_restore_mode">まとめて復元</string>
 </resources>
