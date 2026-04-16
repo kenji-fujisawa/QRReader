@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class ScannedListScreenState{
+enum class ScannedListScreenState {
     Normal,
     RemoveMode
 }
