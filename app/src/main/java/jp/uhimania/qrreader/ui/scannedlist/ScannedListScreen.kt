@@ -3,19 +3,29 @@ package jp.uhimania.qrreader.ui.scannedlist
 import android.content.ClipData
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -25,8 +35,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -34,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +56,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.stringResource
@@ -76,6 +92,7 @@ fun ScannedListScreen(
                         DefaultAppBar(
                             results = uiState.results,
                             onEnterRemoveMode = { viewModel.setScreenState(ScannedListScreenState.RemoveMode) },
+                            onEnterSearchMode = { viewModel.setScreenState(ScannedListScreenState.SearchMode) },
                             onMoveToTrashBox = onMoveToTrashBox
                         )
                     }
@@ -84,6 +101,17 @@ fun ScannedListScreen(
                             onExitRemoveMode = {
                                 viewModel.setScreenState(ScannedListScreenState.Normal)
                                 viewModel.clearSelection()
+                            }
+                        )
+                    }
+                    ScannedListScreenState.SearchMode -> {
+                        SearchModeAppBar(
+                            query = uiState.query,
+                            queryHistory = uiState.queryHistory,
+                            onSearch = { query -> viewModel.updateQuery(query) },
+                            onBack = {
+                                viewModel.setScreenState(ScannedListScreenState.Normal)
+                                viewModel.updateQuery("")
                             }
                         )
                     }
@@ -116,6 +144,7 @@ fun ScannedListScreen(
                                 )
                             }
                         }
+                        ScannedListScreenState.SearchMode -> {}
                     }
                 }
             }
@@ -134,7 +163,13 @@ fun ScannedListScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(stringResource(R.string.no_scanned_results))
+                Text(
+                    text = if (uiState.state == ScannedListScreenState.SearchMode) {
+                        stringResource(R.string.text_not_found)
+                    } else {
+                        stringResource(R.string.no_scanned_results)
+                    }
+                )
             }
         } else {
             LazyColumn(
@@ -177,6 +212,7 @@ fun ScannedListScreen(
 private fun DefaultAppBar(
     results: List<ScannedResultUiState>,
     onEnterRemoveMode: () -> Unit,
+    onEnterSearchMode: () -> Unit,
     onMoveToTrashBox: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -186,6 +222,12 @@ private fun DefaultAppBar(
         actions = {
             var expanded by remember { mutableStateOf(false) }
 
+            IconButton(onClick = onEnterSearchMode) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = Icons.Default.Search.name
+                )
+            }
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
@@ -234,6 +276,111 @@ private fun RemoveModeAppBar(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchModeAppBar(
+    query: String,
+    queryHistory: List<String>,
+    onSearch: (String) -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var query by remember { mutableStateOf(query) }
+    var expanded by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
+    SearchBar(
+        inputField = {
+            SearchBarDefaults.InputField(
+                query = query,
+                onQueryChange = { query = it },
+                onSearch = {
+                    onSearch(query)
+                    expanded = false
+                },
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                modifier = Modifier.focusRequester(focusRequester),
+                placeholder = { Text(stringResource(R.string.text_search_results)) },
+                leadingIcon = {
+                    IconButton(
+                        onClick = {
+                            if (expanded) {
+                                query = ""
+                                expanded = false
+                            } else {
+                                onBack()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = Icons.AutoMirrored.Filled.ArrowBack.name
+                        )
+                    }
+                },
+                trailingIcon = {
+                    AnimatedVisibility(!query.isEmpty()) {
+                        IconButton(
+                            onClick = {
+                                query = ""
+                                onSearch(query)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = Icons.Default.Clear.name
+                            )
+                        }
+                    }
+                }
+            )
+        },
+        expanded = expanded,
+        onExpandedChange = {
+            expanded = it
+            if (!expanded) query = ""
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = if (expanded) 0.dp else 16.dp)
+    ) {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
+            if (!queryHistory.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.text_recent_query),
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
+            queryHistory.forEach { history ->
+                ListItem(
+                    headlineContent = {
+                        Row {
+                            Icon(
+                                imageVector = Icons.Default.History,
+                                contentDescription = Icons.Default.History.name
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(history)
+                        }
+                    },
+                    modifier = Modifier
+                        .clickable {
+                            query = history
+                            expanded = false
+                            onSearch(query)
+                        }
+                        .fillMaxWidth()
+                )
+            }
+        }
+    }
 }
 
 @Composable

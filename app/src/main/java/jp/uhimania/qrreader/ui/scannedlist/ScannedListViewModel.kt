@@ -24,13 +24,16 @@ import kotlinx.coroutines.launch
 
 enum class ScannedListScreenState {
     Normal,
-    RemoveMode
+    RemoveMode,
+    SearchMode
 }
 
 data class ScannedListUiState(
     val results: List<ScannedResultUiState> = listOf(),
     val isLoading: Boolean = false,
-    val state: ScannedListScreenState = ScannedListScreenState.Normal
+    val state: ScannedListScreenState = ScannedListScreenState.Normal,
+    val query: String = "",
+    val queryHistory: List<String> = listOf()
 )
 
 class ScannedListViewModel(
@@ -43,13 +46,19 @@ class ScannedListViewModel(
 
     private val _state = MutableStateFlow(ScannedListScreenState.Normal)
     private val _selected = MutableStateFlow<Set<String>>(setOf())
+    private val _query = MutableStateFlow("")
+    private val _queryHistory = MutableStateFlow<List<String>>(listOf())
 
     val uiState: StateFlow<ScannedListUiState> =
-        combine(_results, _state, _selected) { results, state, _ ->
+        combine(_results, _state, _selected, _query, _queryHistory) { results, state, _, query, history ->
             ScannedListUiState(
-                results = results.map { toUiState(it) },
+                results = results
+                    .filter { it.title.contains(query) || it.text.contains(query) }
+                    .map { toUiState(it) },
                 isLoading = false,
-                state = state
+                state = state,
+                query = query,
+                queryHistory = history.reversed()
             )
         }
             .stateIn(
@@ -110,6 +119,14 @@ class ScannedListViewModel(
 
     fun clearSelection() {
         _selected.update { setOf() }
+    }
+
+    fun updateQuery(query: String) {
+        _query.update { query }
+
+        if (!query.isEmpty() && _queryHistory.value.lastOrNull() != query) {
+            _queryHistory.update { it + query }
+        }
     }
 
     companion object {
