@@ -1,5 +1,6 @@
 package jp.uhimania.qrreader.ui.scannedlist
 
+import jp.uhimania.qrreader.data.QueryHistoryRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
 import jp.uhimania.qrreader.domain.DateFormat
@@ -34,10 +35,11 @@ class ScannedListViewModelTest {
     fun testUiState() = runTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
 
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
 
         backgroundScope.launch(UnconfinedTestDispatcher()) {
             viewModel.uiState.collect {}
@@ -50,7 +52,12 @@ class ScannedListViewModelTest {
             ScannedResult(text = "aaa"),
             ScannedResult(text = "https://google.com/", scannedDate = Date(Date().time - 24 * 60 * 60 * 1000))
         )
-        repository.flow.emit(results)
+        val history = listOf(
+            "bbb",
+            "ccc"
+        )
+        resultRepository.flow.emit(results)
+        queryRepository.flow.emit(history)
         assertEquals(results.count(), viewModel.uiState.value.results.count())
 
         assertEquals(results[0].text, viewModel.uiState.value.results[0].text)
@@ -62,6 +69,11 @@ class ScannedListViewModelTest {
         assertEquals(DateFormat.DaysAgo(1), viewModel.uiState.value.results[1].date)
 
         assertFalse(viewModel.uiState.value.isLoading)
+        assertEquals(ScannedListScreenState.Normal, viewModel.uiState.value.state)
+        assertTrue(viewModel.uiState.value.query.isEmpty())
+
+        assertEquals(history[1], viewModel.uiState.value.queryHistory[0])
+        assertEquals(history[0], viewModel.uiState.value.queryHistory[1])
     }
 
     class FakeScannedResultRepository : ScannedResultRepository {
@@ -76,5 +88,13 @@ class ScannedListViewModelTest {
         override suspend fun forceDelete(id: String) {}
         override suspend fun purgeExpired() {}
         override suspend fun updateTitle(id: String, title: String) {}
+    }
+
+    class FakeQueryHistoryRepository: QueryHistoryRepository {
+        val flow = MutableSharedFlow<List<String>>()
+        override fun getQueryHistoryStream(): Flow<List<String>> {
+            return flow
+        }
+        override suspend fun addQuery(query: String) {}
     }
 }

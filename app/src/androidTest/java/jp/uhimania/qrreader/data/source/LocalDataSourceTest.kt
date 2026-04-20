@@ -40,6 +40,21 @@ class LocalDataSourceTest {
         )
     )
 
+    private val queries = listOf(
+        LocalQueryHistory(
+            query = "aaa",
+            date = Date()
+        ),
+        LocalQueryHistory(
+            query = "bbb",
+            date = Date()
+        ),
+        LocalQueryHistory(
+            query = "ccc",
+            date = Date()
+        )
+    )
+
     @Before
     fun setup() {
         val context: Context = ApplicationProvider.getApplicationContext()
@@ -55,7 +70,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun testInsert() = runBlocking {
+    fun testInsertResults() = runBlocking {
         results.forEach { source.insert(it) }
 
         val values = source.getResults()
@@ -66,7 +81,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun testUpdate() = runBlocking {
+    fun testUpdateResults() = runBlocking {
         results.forEach { source.insert(it) }
 
         val result0 = results[0].copy(text = "test")
@@ -83,7 +98,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun testUpsert() = runBlocking {
+    fun testUpsertResults() = runBlocking {
         results.forEach { source.upsert(it) }
 
         var values = source.getResults()
@@ -106,7 +121,7 @@ class LocalDataSourceTest {
     }
 
     @Test
-    fun testDelete() = runBlocking {
+    fun testDeleteResults() = runBlocking {
         results.forEach { source.insert(it) }
 
         source.delete(results[0])
@@ -140,5 +155,39 @@ class LocalDataSourceTest {
 
         value = source.getResult("")
         assertNull(value)
+    }
+
+    @Test
+    fun testInsertQuery() = runBlocking {
+        queries.forEach { source.insert(it) }
+
+        val values = source.getQueryHistory()
+        assertEquals(queries.count(), values.count())
+        assertEquals(queries[0], values[0])
+        assertEquals(queries[1], values[1])
+        assertEquals(queries[2], values[2])
+    }
+
+    @Test
+    fun testDeleteQuery() = runBlocking {
+        queries.forEach { source.insert(it) }
+
+        source.delete(queries[0])
+        source.delete(queries[1])
+
+        val values = source.getQueryHistory()
+        assertEquals(1, values.count())
+        assertEquals(queries[2], values[0])
+    }
+
+    @Test
+    fun testObserveQueryHistory() = runBlocking {
+        queries.forEach { source.insert(it) }
+
+        val values = source.observeQueryHistory().first()
+        assertEquals(queries.count(), values.count())
+        assertEquals(queries[0], values[0])
+        assertEquals(queries[1], values[1])
+        assertEquals(queries[2], values[2])
     }
 }

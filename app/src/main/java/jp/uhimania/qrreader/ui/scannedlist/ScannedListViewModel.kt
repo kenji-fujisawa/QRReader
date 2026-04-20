@@ -7,7 +7,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import jp.uhimania.qrreader.QRReaderApplication
+import jp.uhimania.qrreader.data.DefaultQueryHistoryRepository
 import jp.uhimania.qrreader.data.DefaultScannedResultRepository
+import jp.uhimania.qrreader.data.QueryHistoryRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
 import jp.uhimania.qrreader.domain.FormatDateUseCase
@@ -37,17 +39,18 @@ data class ScannedListUiState(
 )
 
 class ScannedListViewModel(
-    private val repository: ScannedResultRepository,
+    private val resultRepository: ScannedResultRepository,
+    private val queryRepository: QueryHistoryRepository,
     private val formatDateUseCase: FormatDateUseCase,
     private val validateUrlUseCase: ValidateUrlUseCase
 ) : ViewModel() {
-    private val _results = repository.getResultsStream()
+    private val _results = resultRepository.getResultsStream()
         .map { results -> results.sortedByDescending { it.scannedDate } }
 
     private val _state = MutableStateFlow(ScannedListScreenState.Normal)
     private val _selected = MutableStateFlow<Set<String>>(setOf())
     private val _query = MutableStateFlow("")
-    private val _queryHistory = MutableStateFlow<List<String>>(listOf())
+    private val _queryHistory = queryRepository.getQueryHistoryStream()
 
     val uiState: StateFlow<ScannedListUiState> =
         combine(_results, _state, _selected, _query, _queryHistory) { results, state, _, query, history ->
@@ -69,7 +72,7 @@ class ScannedListViewModel(
 
     init {
         viewModelScope.launch {
-            repository.purgeExpired()
+            resultRepository.purgeExpired()
         }
     }
 
@@ -86,13 +89,13 @@ class ScannedListViewModel(
 
     fun remove(id: String) {
         viewModelScope.launch {
-            repository.markAsDelete(id)
+            resultRepository.markAsDelete(id)
         }
     }
 
     fun updateTitle(id: String, title: String) {
         viewModelScope.launch {
-            repository.updateTitle(id, title)
+            resultRepository.updateTitle(id, title)
         }
     }
 
@@ -111,7 +114,7 @@ class ScannedListViewModel(
     fun removeSelected() {
         viewModelScope.launch {
             _selected.value.forEach {
-                repository.markAsDelete(it)
+                resultRepository.markAsDelete(it)
             }
             clearSelection()
         }
@@ -124,8 +127,10 @@ class ScannedListViewModel(
     fun updateQuery(query: String) {
         _query.update { query }
 
-        if (!query.isEmpty() && _queryHistory.value.lastOrNull() != query) {
-            _queryHistory.update { it + query }
+        if (!query.isEmpty()) {
+            viewModelScope.launch {
+                queryRepository.addQuery(query)
+            }
         }
     }
 
@@ -133,10 +138,11 @@ class ScannedListViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[APPLICATION_KEY] as QRReaderApplication
-                val repository = DefaultScannedResultRepository(app.source)
+                val resultRepository = DefaultScannedResultRepository(app.source)
+                val queryRepository = DefaultQueryHistoryRepository(app.source)
                 val formatDateUseCase = FormatDateUseCase()
                 val validateUrlUseCase = ValidateUrlUseCase()
-                ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+                ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
             }
         }
     }

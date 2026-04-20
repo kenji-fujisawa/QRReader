@@ -1,11 +1,13 @@
 package jp.uhimania.qrreader.data
 
 import jp.uhimania.qrreader.data.source.LocalDataSource
+import jp.uhimania.qrreader.data.source.LocalQueryHistory
 import jp.uhimania.qrreader.data.source.LocalScannedResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -284,5 +286,10 @@ class ScannedResultRepositoryTest {
         override suspend fun delete(result: LocalScannedResult) {
             deleted.add(result)
         }
+
+        override fun observeQueryHistory(): Flow<List<LocalQueryHistory>> { return flowOf() }
+        override suspend fun getQueryHistory(): List<LocalQueryHistory> { return listOf() }
+        override suspend fun insert(query: LocalQueryHistory) {}
+        override suspend fun delete(query: LocalQueryHistory) {}
     }
 }

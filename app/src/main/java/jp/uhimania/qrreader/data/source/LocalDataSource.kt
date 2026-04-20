@@ -30,9 +30,18 @@ interface LocalDataSource {
     @Update suspend fun update(result: LocalScannedResult)
     @Upsert suspend fun upsert(result: LocalScannedResult)
     @Delete suspend fun delete(result: LocalScannedResult)
+
+    @Query("SELECT * FROM query_history ORDER BY date")
+    fun observeQueryHistory(): Flow<List<LocalQueryHistory>>
+
+    @Query("SELECT * FROM query_history ORDER BY date")
+    suspend fun getQueryHistory(): List<LocalQueryHistory>
+
+    @Insert suspend fun insert(query: LocalQueryHistory)
+    @Delete suspend fun delete(query: LocalQueryHistory)
 }
 
-@Database(entities = [LocalScannedResult::class], version = 1)
+@Database(entities = [LocalScannedResult::class, LocalQueryHistory::class], version = 1)
 @TypeConverters(DateConverter::class)
 abstract class LocalDatabase : RoomDatabase() {
     abstract fun dataSource(): LocalDataSource

@@ -21,6 +21,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import jp.uhimania.qrreader.R
+import jp.uhimania.qrreader.data.QueryHistoryRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
 import jp.uhimania.qrreader.domain.FormatDateUseCase
@@ -40,10 +41,11 @@ class ScannedListScreenTest {
     @Test
     fun testBulkRemove() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -80,10 +82,11 @@ class ScannedListScreenTest {
     @Test
     fun testClearSelection() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -119,10 +122,11 @@ class ScannedListScreenTest {
     @Test
     fun testSearch() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -172,10 +176,11 @@ class ScannedListScreenTest {
     @Test
     fun testSearchHistory() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -244,10 +249,11 @@ class ScannedListScreenTest {
     @Test
     fun testSearchByHistory() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -290,10 +296,11 @@ class ScannedListScreenTest {
     @Test
     fun testSearchBackButton() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -321,10 +328,11 @@ class ScannedListScreenTest {
     @Test
     fun testSearchClearButton() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -365,10 +373,11 @@ class ScannedListScreenTest {
     @Test
     fun testCancelSearch() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -403,10 +412,11 @@ class ScannedListScreenTest {
     @Test
     fun testResetQuery() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val repository = FakeScannedResultRepository()
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
         val formatDateUseCase = FormatDateUseCase()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val viewModel = ScannedListViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
         composeTestRule.setContent {
             ScannedListScreen(
                 onStartScanning = {},
@@ -453,5 +463,16 @@ class ScannedListScreenTest {
         override suspend fun forceDelete(id: String) {}
         override suspend fun purgeExpired() {}
         override suspend fun updateTitle(id: String, title: String) {}
+    }
+
+    class FakeQueryHistoryRepository : QueryHistoryRepository {
+        val flow = MutableStateFlow(listOf<String>())
+        override fun getQueryHistoryStream(): Flow<List<String>> {
+            return flow.asStateFlow()
+        }
+
+        override suspend fun addQuery(query: String) {
+            flow.update { it + query }
+        }
     }
 }
