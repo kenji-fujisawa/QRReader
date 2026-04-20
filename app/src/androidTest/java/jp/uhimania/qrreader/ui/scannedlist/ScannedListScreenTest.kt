@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.isOff
 import androidx.compose.ui.test.isOn
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -229,6 +230,11 @@ class ScannedListScreenTest {
         composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).performTextInput(query4)
         Espresso.pressBack()
 
+        // if virtual keyboard is closed by back key, re-input
+        if (composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).isNotDisplayed()) {
+            Espresso.pressBack()
+        }
+
         // check history not added
         composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).performClick()
         composeTestRule.onNodeWithText(query1).assertExists()
@@ -405,6 +411,11 @@ class ScannedListScreenTest {
         // back key
         Espresso.pressBack()
 
+        // if virtual keyboard is closed by back key, re-input
+        if (composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).isNotDisplayed()) {
+            Espresso.pressBack()
+        }
+
         // check input is cleared
         composeTestRule.onNodeWithText(query).assertDoesNotExist()
     }
@@ -440,6 +451,35 @@ class ScannedListScreenTest {
         // check query is reset
         composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).assertExists()
         composeTestRule.onAllNodesWithText(query).assertCountEquals(1)
+    }
+
+    @Test
+    fun testBackKeyFromSearchMode() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
+        val formatDateUseCase = FormatDateUseCase()
+        val validateUrlUseCase = ValidateUrlUseCase()
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
+        composeTestRule.setContent {
+            ScannedListScreen(
+                onStartScanning = {},
+                onMoveToTrashBox = {},
+                viewModel = viewModel
+            )
+        }
+
+        // switch to search mode
+        composeTestRule.onNodeWithContentDescription(Icons.Default.Search.name).performClick()
+
+        // close search bar
+        composeTestRule.onNodeWithContentDescription(Icons.AutoMirrored.Filled.ArrowBack.name).performClick()
+
+        // back key
+        Espresso.pressBack()
+
+        // confirm end search mode
+        composeTestRule.onNodeWithText(context.getString(R.string.title_scanned_list))
     }
 
     class FakeScannedResultRepository : ScannedResultRepository {

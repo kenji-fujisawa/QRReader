@@ -1,6 +1,7 @@
 package jp.uhimania.qrreader.ui.scannedlist
 
 import android.content.ClipData
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -81,6 +82,10 @@ fun ScannedListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
+
+    BackHandler(enabled = uiState.state == ScannedListScreenState.SearchMode) {
+        viewModel.setScreenState(ScannedListScreenState.Normal)
+    }
 
     Scaffold(
         modifier = modifier,
