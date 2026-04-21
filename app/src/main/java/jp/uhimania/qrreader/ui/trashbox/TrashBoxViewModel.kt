@@ -65,6 +65,8 @@ class TrashBoxViewModel(
             id = result.id,
             text = result.text,
             title = result.title,
+            description = result.description,
+            image = result.image,
             isUrl = validateUrlUseCase(result.text),
             date = formatDateUseCase(result.deletedDate ?: Date()),
             selected = _selected.value.contains(result.id)

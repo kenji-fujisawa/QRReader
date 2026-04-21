@@ -56,7 +56,7 @@ class ScannedListViewModel(
         combine(_results, _state, _selected, _query, _queryHistory) { results, state, _, query, history ->
             ScannedListUiState(
                 results = results
-                    .filter { it.title.contains(query) || it.text.contains(query) }
+                    .filter { it.title.contains(query) || it.description.contains(query) || it.text.contains(query) }
                     .map { toUiState(it) },
                 isLoading = false,
                 state = state,
@@ -81,6 +81,8 @@ class ScannedListViewModel(
             id = result.id,
             text = result.text,
             title = result.title,
+            description = result.description,
+            image = result.image,
             isUrl = validateUrlUseCase(result.text),
             date = formatDateUseCase(result.scannedDate),
             selected = _selected.value.contains(result.id)

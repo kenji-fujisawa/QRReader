@@ -7,6 +7,8 @@ data class ScannedResult(
     val id: String = UUID.randomUUID().toString(),
     val text: String = "",
     val title: String = "",
+    val description: String = "",
+    val image: String = "",
     val scannedDate: Date = Date(),
     val deletedDate: Date? = null
 )

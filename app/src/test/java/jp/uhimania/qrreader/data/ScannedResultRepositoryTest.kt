@@ -47,6 +47,8 @@ class ScannedResultRepositoryTest {
                 id = "1",
                 text = "aaa",
                 title = "title1",
+                description = "desc1",
+                image = "image1",
                 scannedDate = Date(),
                 deletedDate = null
             )
@@ -56,6 +58,8 @@ class ScannedResultRepositoryTest {
         assertEquals(1, values[0].count())
         assertEquals(records1[0].id, values[0][0].id)
         assertEquals(records1[0].text, values[0][0].text)
+        assertEquals(records1[0].description, values[0][0].description)
+        assertEquals(records1[0].image, values[0][0].image)
         assertEquals(records1[0].scannedDate, values[0][0].scannedDate)
         assertEquals(records1[0].deletedDate, values[0][0].deletedDate)
 
@@ -64,6 +68,8 @@ class ScannedResultRepositoryTest {
                 id = "2",
                 text = "bbb",
                 title = "title2",
+                description = "desc2",
+                image = "image2",
                 scannedDate = Date(),
                 deletedDate = null
             ),
@@ -71,6 +77,8 @@ class ScannedResultRepositoryTest {
                 id = "3",
                 text = "ccc",
                 title = "title3",
+                description = "desc3",
+                image = "image3",
                 scannedDate = Date(),
                 deletedDate = Date()
             )
@@ -81,12 +89,16 @@ class ScannedResultRepositoryTest {
         assertEquals(records1[0].id, values[0][0].id)
         assertEquals(records1[0].text, values[0][0].text)
         assertEquals(records1[0].title, values[0][0].title)
+        assertEquals(records1[0].description, values[0][0].description)
+        assertEquals(records1[0].image, values[0][0].image)
         assertEquals(records1[0].scannedDate, values[0][0].scannedDate)
         assertEquals(records1[0].deletedDate, values[0][0].deletedDate)
         assertEquals(1, values[1].count())
         assertEquals(records2[0].id, values[1][0].id)
         assertEquals(records2[0].text, values[1][0].text)
         assertEquals(records2[0].title, values[1][0].title)
+        assertEquals(records2[0].description, values[1][0].description)
+        assertEquals(records2[0].image, values[1][0].image)
         assertEquals(records2[0].scannedDate, values[1][0].scannedDate)
         assertEquals(records2[0].deletedDate, values[1][0].deletedDate)
     }
@@ -109,6 +121,8 @@ class ScannedResultRepositoryTest {
                 id = "1",
                 text = "aaa",
                 title = "title1",
+                description = "desc1",
+                image = "image1",
                 scannedDate = Date(),
                 deletedDate = null
             )
@@ -122,6 +136,8 @@ class ScannedResultRepositoryTest {
                 id = "2",
                 text = "bbb",
                 title = "title2",
+                description = "desc2",
+                image = "image2",
                 scannedDate = Date(),
                 deletedDate = null
             ),
@@ -129,6 +145,8 @@ class ScannedResultRepositoryTest {
                 id = "3",
                 text = "ccc",
                 title = "title3",
+                description = "desc3",
+                image = "image3",
                 scannedDate = Date(),
                 deletedDate = Date()
             )
@@ -140,6 +158,8 @@ class ScannedResultRepositoryTest {
         assertEquals(records2[1].id, values[1][0].id)
         assertEquals(records2[1].text, values[1][0].text)
         assertEquals(records2[1].title, values[1][0].title)
+        assertEquals(records2[1].description, values[1][0].description)
+        assertEquals(records2[1].image, values[1][0].image)
         assertEquals(records2[1].scannedDate, values[1][0].scannedDate)
         assertEquals(records2[1].deletedDate, values[1][0].deletedDate)
     }
@@ -153,6 +173,8 @@ class ScannedResultRepositoryTest {
             id = "1",
             text = "aaa",
             title = "title1",
+            description = "desc1",
+            image = "image1",
             scannedDate = Date(),
             deletedDate = Date()
         )
@@ -160,6 +182,8 @@ class ScannedResultRepositoryTest {
         assertEquals(result.id, source.upserted?.id)
         assertEquals(result.text, source.upserted?.text)
         assertEquals(result.title, source.upserted?.title)
+        assertEquals(result.description, source.upserted?.description)
+        assertEquals(result.image, source.upserted?.image)
         assertEquals(result.scannedDate, source.upserted?.scannedDate)
         assertEquals(result.deletedDate, source.upserted?.deletedDate)
 
@@ -167,6 +191,8 @@ class ScannedResultRepositoryTest {
         assertEquals(result.id, source.upserted?.id)
         assertEquals("bbb", source.upserted?.text)
         assertEquals(result.title, source.upserted?.title)
+        assertEquals(result.description, source.upserted?.description)
+        assertEquals(result.image, source.upserted?.image)
         assertEquals(result.scannedDate, source.upserted?.scannedDate)
         assertEquals(result.deletedDate, source.upserted?.deletedDate)
     }
@@ -181,6 +207,8 @@ class ScannedResultRepositoryTest {
         assertEquals(id, source.updated?.id)
         assertEquals(source.result.text, source.updated?.text)
         assertEquals(source.result.title, source.updated?.title)
+        assertEquals(source.result.description, source.updated?.description)
+        assertEquals(source.result.image, source.updated?.image)
         assertEquals(source.result.scannedDate, source.updated?.scannedDate)
         assertNotNull(source.updated?.deletedDate)
         assertTrue(Date().time - (source.updated?.deletedDate?.time ?: 0) < 1000)
@@ -189,6 +217,8 @@ class ScannedResultRepositoryTest {
         assertEquals(id, source.updated?.id)
         assertEquals(source.result.text, source.updated?.text)
         assertEquals(source.result.title, source.updated?.title)
+        assertEquals(source.result.description, source.updated?.description)
+        assertEquals(source.result.image, source.updated?.image)
         assertEquals(source.result.scannedDate, source.updated?.scannedDate)
         assertNull(source.updated?.deletedDate)
     }
@@ -237,6 +267,8 @@ class ScannedResultRepositoryTest {
                 id = "1",
                 text = "",
                 title = "",
+                description = "",
+                image = "",
                 scannedDate = Date(),
                 deletedDate = null
             ),
@@ -244,6 +276,8 @@ class ScannedResultRepositoryTest {
                 id = "2",
                 text = "",
                 title = "",
+                description = "",
+                image = "",
                 scannedDate = Date(),
                 deletedDate = Date(Date().time - 30L * 24 * 60 * 60 * 1000 + 1000)
             ),
@@ -251,6 +285,8 @@ class ScannedResultRepositoryTest {
                 id = "3",
                 text = "",
                 title = "",
+                description = "",
+                image = "",
                 scannedDate = Date(),
                 deletedDate = Date(Date().time - 30L * 24 * 60 * 60 * 1000 - 1000)
             )
@@ -263,6 +299,8 @@ class ScannedResultRepositoryTest {
             id = "",
             text = "aaa",
             title = "title1",
+            description = "desc1",
+            image = "image1",
             scannedDate = Date(),
             deletedDate = null
         )

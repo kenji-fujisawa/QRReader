@@ -12,8 +12,8 @@ import jp.uhimania.qrreader.QRReaderApplication
 import jp.uhimania.qrreader.data.DefaultScannedResultRepository
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
-import jp.uhimania.qrreader.domain.DefaultGetPageTitleUseCase
-import jp.uhimania.qrreader.domain.GetPageTitleUseCase
+import jp.uhimania.qrreader.domain.DefaultGetPagePreviewUseCase
+import jp.uhimania.qrreader.domain.GetPagePreviewUseCase
 import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +33,7 @@ data class QRReaderUiState(
 class QRReaderViewModel(
     private val repository: ScannedResultRepository,
     private val validateUrlUseCase: ValidateUrlUseCase,
-    private val getPageTitleUseCase: GetPageTitleUseCase
+    private val getPagePreviewUseCase: GetPagePreviewUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(QRReaderUiState())
     val uiState = _uiState.asStateFlow()
@@ -60,12 +60,26 @@ class QRReaderViewModel(
     }
 
     fun saveResult() {
-        _uiState.value.decodedText?.let {
+        _uiState.value.decodedText?.let { text ->
             _uiState.update { it.copy(isLoading = true) }
 
             viewModelScope.launch {
-                val title = if (!_uiState.value.isUrl) "" else getPageTitleUseCase(it)
-                val result = ScannedResult(text = it, title = title)
+                val result = if (!_uiState.value.isUrl) {
+                    ScannedResult(text = text)
+                } else {
+                    try {
+                        val preview = getPagePreviewUseCase(text)
+                        ScannedResult(
+                            text = text,
+                            title = preview.title,
+                            description = preview.description,
+                            image = preview.image
+                        )
+                    } catch (_: Exception) {
+                        ScannedResult(text = text)
+                    }
+                }
+
                 repository.saveResult(result)
 
                 _navigateToBack.emit(Unit)
@@ -79,8 +93,8 @@ class QRReaderViewModel(
                 val app = this[APPLICATION_KEY] as QRReaderApplication
                 val repository = DefaultScannedResultRepository(app.source)
                 val validateUrlUseCase = ValidateUrlUseCase()
-                val getPageTitleUseCase = DefaultGetPageTitleUseCase()
-                QRReaderViewModel(repository, validateUrlUseCase, getPageTitleUseCase)
+                val getPagePreviewUseCase = DefaultGetPagePreviewUseCase()
+                QRReaderViewModel(repository, validateUrlUseCase, getPagePreviewUseCase)
             }
         }
     }

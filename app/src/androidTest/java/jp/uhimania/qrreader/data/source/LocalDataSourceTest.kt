@@ -21,6 +21,8 @@ class LocalDataSourceTest {
             id = "1",
             text = "aaa",
             title = "title1",
+            description = "desc1",
+            image = "image1",
             scannedDate = Date(),
             deletedDate = null
         ),
@@ -28,6 +30,8 @@ class LocalDataSourceTest {
             id = "2",
             text = "bbb",
             title = "title2",
+            description = "desc2",
+            image = "image2",
             scannedDate = Date(),
             deletedDate = Date()
         ),
@@ -35,6 +39,8 @@ class LocalDataSourceTest {
             id = "3",
             text = "ccc",
             title = "title3",
+            description = "desc3",
+            image = "image3",
             scannedDate = Date(),
             deletedDate = null
         )

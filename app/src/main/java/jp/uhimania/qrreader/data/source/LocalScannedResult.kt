@@ -10,6 +10,8 @@ data class LocalScannedResult(
     @PrimaryKey val id: String,
     val text: String,
     val title: String,
+    val description: String,
+    val image: String,
     @ColumnInfo(name = "scanned_date") val scannedDate: Date,
     @ColumnInfo(name = "deleted_date") val deletedDate: Date?
 )

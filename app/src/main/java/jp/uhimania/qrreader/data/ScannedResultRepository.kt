@@ -89,6 +89,8 @@ fun ScannedResult.asLocal(): LocalScannedResult {
         id = this.id,
         text = this.text,
         title = this.title,
+        description = this.description,
+        image = this.image,
         scannedDate = this.scannedDate,
         deletedDate = this.deletedDate
     )
@@ -99,6 +101,8 @@ fun LocalScannedResult.asResult(): ScannedResult {
         id = this.id,
         text = this.text,
         title = this.title,
+        description = this.description,
+        image = this.image,
         scannedDate = this.scannedDate,
         deletedDate = this.deletedDate
     )

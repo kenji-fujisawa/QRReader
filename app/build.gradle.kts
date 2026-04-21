@@ -69,6 +69,9 @@ dependencies {
     // Jsoup
     implementation(libs.jsoup)
 
+    // coil
+    implementation(libs.coil.compose)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)

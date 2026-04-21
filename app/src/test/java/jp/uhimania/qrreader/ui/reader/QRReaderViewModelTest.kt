@@ -4,8 +4,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import jp.uhimania.qrreader.data.ScannedResult
 import jp.uhimania.qrreader.data.ScannedResultRepository
-import jp.uhimania.qrreader.domain.DefaultGetPageTitleUseCase
-import jp.uhimania.qrreader.domain.GetPageTitleUseCase
+import jp.uhimania.qrreader.domain.DefaultGetPagePreviewUseCase
+import jp.uhimania.qrreader.domain.GetPagePreviewUseCase
+import jp.uhimania.qrreader.domain.PagePreview
 import jp.uhimania.qrreader.domain.ValidateUrlUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,8 +34,8 @@ class QRReaderViewModelTest {
     fun testUiState() {
         val repository = FakeScannedResultRepository()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val getPageTitleUseCase = DefaultGetPageTitleUseCase()
-        val viewModel = QRReaderViewModel(repository, validateUrlUseCase, getPageTitleUseCase)
+        val getPagePreviewUseCase = DefaultGetPagePreviewUseCase()
+        val viewModel = QRReaderViewModel(repository, validateUrlUseCase, getPagePreviewUseCase)
         assertNull(viewModel.uiState.value.decodedText)
         assertFalse(viewModel.uiState.value.isUrl)
         assertNull(viewModel.uiState.value.barCodeRect)
@@ -76,8 +77,8 @@ class QRReaderViewModelTest {
 
         val repository = FakeScannedResultRepository()
         val validateUrlUseCase = ValidateUrlUseCase()
-        val getPageTitleUseCase = FakeGetPageTitleUseCase()
-        val viewModel = QRReaderViewModel(repository, validateUrlUseCase, getPageTitleUseCase)
+        val getPagePreviewUseCase = FakeGetPagePreviewUseCase()
+        val viewModel = QRReaderViewModel(repository, validateUrlUseCase, getPagePreviewUseCase)
 
         viewModel.saveResult()
         assertNull(repository.savedResult)
@@ -87,12 +88,16 @@ class QRReaderViewModelTest {
         viewModel.saveResult()
         assertEquals(text, repository.savedResult?.text)
         assertEquals("", repository.savedResult?.title)
+        assertEquals("", repository.savedResult?.description)
+        assertEquals("", repository.savedResult?.image)
 
         text = "https://google.com"
         viewModel.updateDecodedText(text)
         viewModel.saveResult()
         assertEquals(text, repository.savedResult?.text)
-        assertEquals(getPageTitleUseCase(text), repository.savedResult?.title)
+        assertEquals(getPagePreviewUseCase(text).title, repository.savedResult?.title)
+        assertEquals(getPagePreviewUseCase(text).description, repository.savedResult?.description)
+        assertEquals(getPagePreviewUseCase(text).image, repository.savedResult?.image)
     }
 
     class FakeScannedResultRepository : ScannedResultRepository {
@@ -111,9 +116,13 @@ class QRReaderViewModelTest {
         override suspend fun updateTitle(id: String, title: String) {}
     }
 
-    class FakeGetPageTitleUseCase : GetPageTitleUseCase {
-        override suspend operator fun invoke(url: String): String {
-            return "title"
+    class FakeGetPagePreviewUseCase : GetPagePreviewUseCase {
+        override suspend operator fun invoke(url: String): PagePreview {
+            return PagePreview(
+                title = "title",
+                description = "description",
+                image = "image"
+            )
         }
     }
 }
