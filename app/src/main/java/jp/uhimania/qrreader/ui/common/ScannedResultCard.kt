@@ -108,6 +108,13 @@ fun ScannedResultCard(
                             MaterialTheme.typography.bodyMedium
                         }
                     )
+
+                    if (!uiState.description.isEmpty()) {
+                        Text(
+                            text = uiState.description,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))

@@ -81,7 +81,8 @@ fun ScannedListScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
+    var itemToEditTitle by remember { mutableStateOf<ScannedResultUiState?>(null) }
+    var itemToEditDescription by remember { mutableStateOf<ScannedResultUiState?>(null) }
 
     BackHandler(enabled = uiState.state == ScannedListScreenState.SearchMode) {
         viewModel.setScreenState(ScannedListScreenState.Normal)
@@ -192,20 +193,34 @@ fun ScannedListScreen(
                                 viewModel.unselect(result.id)
                             }
                         },
-                        onEditTitle = { selectedItem = it },
+                        onEditTitle = { itemToEditTitle = it },
+                        onEditDescription = { itemToEditDescription = it },
                         onRemove = { viewModel.remove(it.id) },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
 
-            selectedItem?.let {
-                TitleEditDialog(
-                    title = it.title,
-                    onDismissRequest = { selectedItem = null },
-                    onTitleFixed = { title ->
-                        viewModel.updateTitle(it.id, title)
-                        selectedItem = null
+            itemToEditTitle?.let {
+                TextEditDialog(
+                    text = it.title,
+                    placeholder = stringResource(R.string.text_entry_title),
+                    onDismissRequest = { itemToEditTitle = null },
+                    onFixed = { text ->
+                        viewModel.updateTitle(it.id, text)
+                        itemToEditTitle = null
+                    }
+                )
+            }
+
+            itemToEditDescription?.let {
+                TextEditDialog(
+                    text = it.description,
+                    placeholder = stringResource(R.string.text_entry_description),
+                    onDismissRequest = { itemToEditDescription = null },
+                    onFixed = { text ->
+                        viewModel.updateDescription(it.id, text)
+                        itemToEditDescription = null
                     }
                 )
             }
@@ -403,6 +418,7 @@ private fun ResultItem(
     showCheckBox: Boolean,
     onCheckChange: (Boolean) -> Unit,
     onEditTitle: (ScannedResultUiState) -> Unit,
+    onEditDescription: (ScannedResultUiState) -> Unit,
     onRemove: (ScannedResultUiState) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -434,6 +450,13 @@ private fun ResultItem(
                     }
                 )
                 DropdownMenuItem(
+                    text = { Text(stringResource(R.string.label_edit_description)) },
+                    onClick = {
+                        onEditDescription(result)
+                        expanded = false
+                    }
+                )
+                DropdownMenuItem(
                     text = { Text(stringResource(R.string.action_label_copy)) },
                     onClick = {
                         scope.launch {
@@ -458,13 +481,14 @@ private fun ResultItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TitleEditDialog(
-    title: String,
+private fun TextEditDialog(
+    text: String,
+    placeholder: String,
     onDismissRequest: () -> Unit,
-    onTitleFixed: (String) -> Unit,
+    onFixed: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var text by remember { mutableStateOf(title) }
+    var text by remember { mutableStateOf(text) }
 
     BasicAlertDialog(
         onDismissRequest = onDismissRequest,
@@ -478,13 +502,13 @@ private fun TitleEditDialog(
                 TextField(
                     value = text,
                     onValueChange = { text = it },
-                    placeholder = { Text(stringResource(R.string.text_entry_title)) }
+                    placeholder = { Text(placeholder) }
                 )
                 Row(Modifier.align(Alignment.End)) {
                     TextButton(onDismissRequest) {
                         Text(stringResource(R.string.caption_cancel))
                     }
-                    TextButton({ onTitleFixed(text) }) {
+                    TextButton({ onFixed(text) }) {
                         Text(stringResource(R.string.caption_ok))
                     }
                 }
@@ -503,6 +527,7 @@ private fun ResultItemPreview() {
             showCheckBox = false,
             onCheckChange = {},
             onEditTitle = {},
+            onEditDescription = {},
             onRemove = {}
         )
     }
@@ -510,12 +535,13 @@ private fun ResultItemPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun TitleEditDialogPreview() {
+private fun TextEditDialogPreview() {
     QRReaderTheme {
-        TitleEditDialog(
-            title = "title",
+        TextEditDialog(
+            text = "text",
+            placeholder = "",
             onDismissRequest = {},
-            onTitleFixed = {}
+            onFixed = {}
         )
     }
 }

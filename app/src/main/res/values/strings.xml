@@ -23,4 +23,6 @@
     <string name="text_search_results">読み取り履歴を検索</string>
     <string name="text_recent_query">最近の検索</string>
     <string name="text_not_found">一致する結果はありません</string>
+    <string name="label_edit_description">メモを編集</string>
+    <string name="text_entry_description">メモを入力してください</string>
 </resources>

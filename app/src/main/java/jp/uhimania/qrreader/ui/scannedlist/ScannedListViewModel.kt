@@ -101,6 +101,12 @@ class ScannedListViewModel(
         }
     }
 
+    fun updateDescription(id: String, description: String) {
+        viewModelScope.launch {
+            resultRepository.updateDescription(id, description)
+        }
+    }
+
     fun setScreenState(state: ScannedListScreenState) {
         _state.update { state }
     }

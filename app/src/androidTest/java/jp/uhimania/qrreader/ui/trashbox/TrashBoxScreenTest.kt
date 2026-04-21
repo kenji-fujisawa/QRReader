@@ -211,5 +211,6 @@ class TrashBoxScreenTest {
 
         override suspend fun purgeExpired() {}
         override suspend fun updateTitle(id: String, title: String) {}
+        override suspend fun updateDescription(id: String, description: String) {}
     }
 }

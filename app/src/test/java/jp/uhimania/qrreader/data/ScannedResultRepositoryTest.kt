@@ -256,6 +256,18 @@ class ScannedResultRepositoryTest {
         assertEquals(title, source.updated?.title)
     }
 
+    @Test
+    fun testUpdateDescription() = runTest {
+        val source = FakeLocalDataSource()
+        val repository = DefaultScannedResultRepository(source)
+
+        val id = "1"
+        val description = "desc"
+        repository.updateDescription(id, description)
+        assertEquals(id, source.updated?.id)
+        assertEquals(description, source.updated?.description)
+    }
+
     class FakeLocalDataSource : LocalDataSource {
         val flow = MutableSharedFlow<List<LocalScannedResult>>()
         override fun observeResults(): Flow<List<LocalScannedResult>> {

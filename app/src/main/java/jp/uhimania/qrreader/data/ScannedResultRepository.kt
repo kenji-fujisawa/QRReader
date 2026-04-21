@@ -19,6 +19,7 @@ interface ScannedResultRepository {
     suspend fun forceDelete(id: String)
     suspend fun purgeExpired()
     suspend fun updateTitle(id: String, title: String)
+    suspend fun updateDescription(id: String, description: String)
 }
 
 class DefaultScannedResultRepository(
@@ -79,6 +80,13 @@ class DefaultScannedResultRepository(
     override suspend fun updateTitle(id: String, title: String) {
         source.getResult(id)?.let {
             val result = it.copy(title = title)
+            source.update(result)
+        }
+    }
+
+    override suspend fun updateDescription(id: String, description: String) {
+        source.getResult(id)?.let {
+            val result = it.copy(description = description)
             source.update(result)
         }
     }
