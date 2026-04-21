@@ -139,6 +139,7 @@ class TrashBoxScreenTest {
         composeTestRule.onAllNodes(isOff())[2].performClick()
         composeTestRule.onAllNodes(isOff())[0].performClick()
         composeTestRule.onNodeWithContentDescription(Icons.Default.Delete.name).performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.label_remove)).performClick()
 
         // check results
         composeTestRule.onNodeWithText(context.getString(R.string.title_trash_box)).assertExists()
