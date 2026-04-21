@@ -214,6 +214,11 @@ class ScannedListScreenTest {
         composeTestRule.onNodeWithText(query1).assertExists()
         composeTestRule.onNodeWithText(query2).assertExists()
 
+        // delete history
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.Clear.name)[0].performClick()
+        composeTestRule.onNodeWithText(query1).assertExists()
+        composeTestRule.onNodeWithText(query2).assertDoesNotExist()
+
         // input and back
         val query3 = "query3"
         composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).performTextInput(query3)
@@ -222,7 +227,7 @@ class ScannedListScreenTest {
         // check history not added
         composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).performClick()
         composeTestRule.onNodeWithText(query1).assertExists()
-        composeTestRule.onNodeWithText(query2).assertExists()
+        composeTestRule.onNodeWithText(query2).assertDoesNotExist()
         composeTestRule.onNodeWithText(query3).assertDoesNotExist()
 
         // input and back key
@@ -238,7 +243,7 @@ class ScannedListScreenTest {
         // check history not added
         composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).performClick()
         composeTestRule.onNodeWithText(query1).assertExists()
-        composeTestRule.onNodeWithText(query2).assertExists()
+        composeTestRule.onNodeWithText(query2).assertDoesNotExist()
         composeTestRule.onNodeWithText(query3).assertDoesNotExist()
         composeTestRule.onNodeWithText(query4).assertDoesNotExist()
 
@@ -513,6 +518,10 @@ class ScannedListScreenTest {
 
         override suspend fun addQuery(query: String) {
             flow.update { it + query }
+        }
+
+        override suspend fun deleteQuery(query: String) {
+            flow.update { it - query }
         }
     }
 }

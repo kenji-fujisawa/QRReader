@@ -12,6 +12,7 @@ import java.util.Date
 interface QueryHistoryRepository {
     fun getQueryHistoryStream(): Flow<List<String>>
     suspend fun addQuery(query: String)
+    suspend fun deleteQuery(query: String)
 }
 
 class DefaultQueryHistoryRepository(
@@ -38,5 +39,11 @@ class DefaultQueryHistoryRepository(
         }
 
         source.insert(LocalQueryHistory(query, Date()))
+    }
+
+    override suspend fun deleteQuery(query: String) {
+        source.getQueryHistory()
+            .filter { it.query == query }
+            .forEach { source.delete(it) }
     }
 }

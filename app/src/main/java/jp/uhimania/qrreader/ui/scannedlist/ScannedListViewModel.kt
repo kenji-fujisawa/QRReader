@@ -134,6 +134,12 @@ class ScannedListViewModel(
         }
     }
 
+    fun deleteQuery(query: String) {
+        viewModelScope.launch {
+            queryRepository.deleteQuery(query)
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

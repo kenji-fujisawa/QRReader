@@ -109,6 +109,24 @@ class QueryHistoryRepositoryTest {
         assertEquals("ccc", source.history[4].query)
     }
 
+    @Test
+    fun testDeleteQuery() = runTest {
+        val source = FakeLocalDataSource()
+        val repository = DefaultQueryHistoryRepository(source)
+
+        repository.deleteQuery("aaa")
+        assertEquals(0, source.history.count())
+
+        source.history.add(LocalQueryHistory("aaa", Date()))
+        source.history.add(LocalQueryHistory("bbb", Date()))
+        source.history.add(LocalQueryHistory("ccc", Date()))
+
+        repository.deleteQuery("aaa")
+        repository.deleteQuery("ccc")
+        assertEquals(1, source.history.count())
+        assertEquals("bbb", source.history[0].query)
+    }
+
     class FakeLocalDataSource: LocalDataSource {
         override fun observeResults(): Flow<List<LocalScannedResult>> { return flowOf() }
         override suspend fun getResults(): List<LocalScannedResult> { return listOf() }

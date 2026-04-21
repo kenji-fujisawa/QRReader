@@ -114,6 +114,7 @@ fun ScannedListScreen(
                             query = uiState.query,
                             queryHistory = uiState.queryHistory,
                             onSearch = { query -> viewModel.updateQuery(query) },
+                            onDeleteQuery = { query -> viewModel.deleteQuery(query) },
                             onBack = {
                                 viewModel.setScreenState(ScannedListScreenState.Normal)
                                 viewModel.updateQuery("")
@@ -289,6 +290,7 @@ private fun SearchModeAppBar(
     query: String,
     queryHistory: List<String>,
     onSearch: (String) -> Unit,
+    onDeleteQuery: (String) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -366,13 +368,20 @@ private fun SearchModeAppBar(
             queryHistory.forEach { history ->
                 ListItem(
                     headlineContent = {
-                        Row {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.History,
                                 contentDescription = Icons.Default.History.name
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(history)
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(onClick = { onDeleteQuery(history) }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = Icons.Default.Clear.name
+                                )
+                            }
                         }
                     },
                     modifier = Modifier

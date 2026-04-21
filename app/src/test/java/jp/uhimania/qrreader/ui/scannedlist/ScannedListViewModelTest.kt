@@ -96,5 +96,6 @@ class ScannedListViewModelTest {
             return flow
         }
         override suspend fun addQuery(query: String) {}
+        override suspend fun deleteQuery(query: String) {}
     }
 }
