@@ -1,11 +1,11 @@
-package jp.uhimania.qrreader.ui
+package jp.uhimania.qrreader.ui.reader
 
-import android.graphics.Rect
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -20,8 +20,8 @@ fun BarcodeMarker(
     val scale = maxOf(screenSize.width / imageSize.width, screenSize.height / imageSize.height)
     val diffWidth = (imageSize.width * scale - screenSize.width) / 2f
     val diffHeight = (imageSize.height * scale - screenSize.height) / 2f
-    val offset = Offset(barcodeRect.left.toFloat() * scale - diffWidth, barcodeRect.top.toFloat() * scale - diffHeight)
-    val size = Size(barcodeRect.width() * scale, barcodeRect.height() * scale)
+    val offset = Offset(barcodeRect.left * scale - diffWidth, barcodeRect.top * scale - diffHeight)
+    val size = Size(barcodeRect.width * scale, barcodeRect.height * scale)
     Canvas(modifier = modifier) {
         drawRoundRect(
             topLeft = offset,
