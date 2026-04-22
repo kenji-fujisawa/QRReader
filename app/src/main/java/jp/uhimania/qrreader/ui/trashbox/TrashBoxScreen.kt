@@ -42,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -250,7 +249,7 @@ private fun DefaultAppBar(
                                 style = if (results.isEmpty()) {
                                     TextStyle.Default
                                 } else {
-                                    TextStyle.Default.copy(color = Color.Red)
+                                    TextStyle.Default.copy(color = MaterialTheme.colorScheme.error)
                                 }
                             )
                         },
@@ -296,7 +295,7 @@ private fun RemoveModeAppBar(
         title = {
             Text(
                 text = stringResource(R.string.title_remove_mode),
-                color = Color.Red
+                color = MaterialTheme.colorScheme.error
             )
         },
         modifier = modifier,
@@ -349,7 +348,7 @@ private fun ResultItem(
                     text = {
                         Text(
                             text = stringResource(R.string.label_force_remove),
-                            style = TextStyle.Default.copy(color = Color.Red)
+                            style = TextStyle.Default.copy(color = MaterialTheme.colorScheme.error)
                         )
                     },
                     onClick = {
@@ -389,7 +388,7 @@ private fun ConfirmDialog(
                     TextButton(onConfirmDelete) {
                         Text(
                             text = stringResource(R.string.caption_delete),
-                            style = TextStyle.Default.copy(color = Color.Red)
+                            style = TextStyle.Default.copy(color = MaterialTheme.colorScheme.error)
                         )
                     }
                 }
