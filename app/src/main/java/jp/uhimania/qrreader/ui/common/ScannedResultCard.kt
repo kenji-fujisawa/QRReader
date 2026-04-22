@@ -96,7 +96,7 @@ fun ScannedResultCard(
                                         uriHandler.openUri(uiState.text)
                                     }
                                 },
-                            contentScale = ContentScale.Crop
+                            contentScale = ContentScale.Fit
                         )
                     }
                 } else {
