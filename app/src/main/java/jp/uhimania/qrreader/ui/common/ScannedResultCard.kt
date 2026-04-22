@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -42,7 +43,12 @@ fun ScannedResultCard(
     modifier: Modifier = Modifier,
     menu: @Composable () -> Unit
 ) {
-    ElevatedCard(modifier = modifier.padding(4.dp)) {
+    ElevatedCard(
+        modifier = modifier.padding(4.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
         Row(
             modifier = Modifier
                 .height(IntrinsicSize.Min)
