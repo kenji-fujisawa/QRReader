@@ -84,9 +84,10 @@ fun ScannedListScreen(
     var itemToEditTitle by remember { mutableStateOf<ScannedResultUiState?>(null) }
     var itemToEditDescription by remember { mutableStateOf<ScannedResultUiState?>(null) }
 
-    BackHandler(enabled = uiState.state == ScannedListScreenState.SearchMode) {
+    BackHandler(enabled = uiState.state != ScannedListScreenState.Normal) {
         viewModel.setScreenState(ScannedListScreenState.Normal)
         viewModel.updateQuery("")
+        viewModel.clearSelection()
     }
 
     Scaffold(

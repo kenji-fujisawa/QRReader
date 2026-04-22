@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import jp.uhimania.qrreader.R
 import jp.uhimania.qrreader.data.ScannedResult
@@ -109,6 +110,42 @@ class TrashBoxScreenTest {
     }
 
     @Test
+    fun testBackKeyFromBulkRestoreMode() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val repository = FakeScannedResultRepository()
+        val formatDateUseCase = FormatDateUseCase()
+        val validateUrlUseCase = ValidateUrlUseCase()
+        val viewModel = TrashBoxViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        composeTestRule.setContent {
+            TrashBoxScreen(
+                onBack = {},
+                viewModel = viewModel
+            )
+        }
+
+        // switch to restore mode
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.title_restore_mode)).performClick()
+
+        // select "aaa" and "ccc"
+        composeTestRule.onAllNodes(isOff())[2].performClick()
+        composeTestRule.onAllNodes(isOff())[0].performClick()
+
+        // back key
+        Espresso.pressBack()
+
+        // confirm end restore mode
+        composeTestRule.onNodeWithText(context.getString(R.string.title_trash_box))
+
+        // reopen restore mode
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.title_restore_mode)).performClick()
+
+        // check selection is cleared
+        composeTestRule.onAllNodes(isOff()).assertCountEquals(3)
+    }
+
+    @Test
     fun testBulkRemove() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val repository = FakeScannedResultRepository()
@@ -179,6 +216,42 @@ class TrashBoxScreenTest {
 
         // end remove mode and reopen remove mode
         composeTestRule.onNodeWithContentDescription(Icons.Default.Check.name).performClick()
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.title_remove_mode)).performClick()
+
+        // check selection is cleared
+        composeTestRule.onAllNodes(isOff()).assertCountEquals(3)
+    }
+
+    @Test
+    fun testBackKeyFromRemoveMode() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val repository = FakeScannedResultRepository()
+        val formatDateUseCase = FormatDateUseCase()
+        val validateUrlUseCase = ValidateUrlUseCase()
+        val viewModel = TrashBoxViewModel(repository, formatDateUseCase, validateUrlUseCase)
+        composeTestRule.setContent {
+            TrashBoxScreen(
+                onBack = {},
+                viewModel = viewModel
+            )
+        }
+
+        // switch to remove mode
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.title_remove_mode)).performClick()
+
+        // select "aaa" and "ccc"
+        composeTestRule.onAllNodes(isOff())[2].performClick()
+        composeTestRule.onAllNodes(isOff())[0].performClick()
+
+        // back key
+        Espresso.pressBack()
+
+        // confirm end remove mode
+        composeTestRule.onNodeWithText(context.getString(R.string.title_trash_box))
+
+        // reopen remove mode
         composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
         composeTestRule.onNodeWithText(context.getString(R.string.title_remove_mode)).performClick()
 

@@ -121,6 +121,44 @@ class ScannedListScreenTest {
     }
 
     @Test
+    fun testBackKeyFromBulkRemoveMode() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val resultRepository = FakeScannedResultRepository()
+        val queryRepository = FakeQueryHistoryRepository()
+        val formatDateUseCase = FormatDateUseCase()
+        val validateUrlUseCase = ValidateUrlUseCase()
+        val viewModel = ScannedListViewModel(resultRepository, queryRepository, formatDateUseCase, validateUrlUseCase)
+        composeTestRule.setContent {
+            ScannedListScreen(
+                onStartScanning = {},
+                onMoveToTrashBox = {},
+                viewModel = viewModel
+            )
+        }
+
+        // switch to remove mode
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.title_remove_mode)).performClick()
+
+        // select "aaa" and "ccc"
+        composeTestRule.onAllNodes(isOff())[2].performClick()
+        composeTestRule.onAllNodes(isOff())[0].performClick()
+
+        // back key
+        Espresso.pressBack()
+
+        // confirm end remove mode
+        composeTestRule.onNodeWithText(context.getString(R.string.title_scanned_list))
+
+        // reopen remove mode
+        composeTestRule.onAllNodesWithContentDescription(Icons.Default.MoreVert.name)[3].performClick()
+        composeTestRule.onNodeWithText(context.getString(R.string.title_remove_mode)).performClick()
+
+        // check selection is cleared
+        composeTestRule.onAllNodes(isOff()).assertCountEquals(3)
+    }
+
+    @Test
     fun testSearch() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val resultRepository = FakeScannedResultRepository()

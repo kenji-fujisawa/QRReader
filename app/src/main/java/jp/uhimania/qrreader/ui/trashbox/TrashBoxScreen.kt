@@ -1,5 +1,6 @@
 package jp.uhimania.qrreader.ui.trashbox
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,6 +64,11 @@ fun TrashBoxScreen(
     val uiState by viewModel.uiState.collectAsState()
     var selectedItem by remember { mutableStateOf<ScannedResultUiState?>(null) }
     var showConfirmBulkRemove by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = uiState.state != TrashBoxScreenState.Normal) {
+        viewModel.setScreenState(TrashBoxScreenState.Normal)
+        viewModel.clearSelection()
+    }
 
     Scaffold(
         modifier = modifier,
