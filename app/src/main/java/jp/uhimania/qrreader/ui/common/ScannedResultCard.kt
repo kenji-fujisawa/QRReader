@@ -46,7 +46,7 @@ fun ScannedResultCard(
     ElevatedCard(
         modifier = modifier.padding(4.dp),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
         )
     ) {
         Row(
