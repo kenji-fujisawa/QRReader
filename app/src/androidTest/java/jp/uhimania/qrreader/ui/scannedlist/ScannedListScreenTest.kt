@@ -477,14 +477,24 @@ class ScannedListScreenTest {
         // switch to search mode
         composeTestRule.onNodeWithContentDescription(Icons.Default.Search.name).performClick()
 
-        // close search bar
-        composeTestRule.onNodeWithContentDescription(Icons.AutoMirrored.Filled.ArrowBack.name).performClick()
+        // do search
+        val query = "title"
+        composeTestRule.onNodeWithText(context.getString(R.string.text_search_results)).performTextInput(query)
+        composeTestRule.onNodeWithText(query).performImeAction()
+
+        // confirm filtered
+        composeTestRule.onNodeWithText("aaa").assertExists()
+        composeTestRule.onNodeWithText("bbb").assertExists()
+        composeTestRule.onNodeWithText("ccc").assertDoesNotExist()
 
         // back key
         Espresso.pressBack()
 
-        // confirm end search mode
+        // confirm end search mode and filter cleared
         composeTestRule.onNodeWithText(context.getString(R.string.title_scanned_list))
+        composeTestRule.onNodeWithText("aaa").assertExists()
+        composeTestRule.onNodeWithText("bbb").assertExists()
+        composeTestRule.onNodeWithText("ccc").assertExists()
     }
 
     class FakeScannedResultRepository : ScannedResultRepository {

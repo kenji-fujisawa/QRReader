@@ -86,6 +86,7 @@ fun ScannedListScreen(
 
     BackHandler(enabled = uiState.state == ScannedListScreenState.SearchMode) {
         viewModel.setScreenState(ScannedListScreenState.Normal)
+        viewModel.updateQuery("")
     }
 
     Scaffold(
