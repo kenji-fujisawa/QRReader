@@ -22,10 +22,10 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -102,7 +102,7 @@ fun TrashBoxScreen(
                 when (it) {
                     TrashBoxScreenState.Normal -> {}
                     TrashBoxScreenState.RestoreMode -> {
-                        FloatingActionButton(
+                        LargeFloatingActionButton(
                             onClick = {
                                 viewModel.restoreSelected()
                                 viewModel.setScreenState(TrashBoxScreenState.Normal)
@@ -115,7 +115,7 @@ fun TrashBoxScreen(
                         }
                     }
                     TrashBoxScreenState.ForceRemoveMode -> {
-                        FloatingActionButton(
+                        LargeFloatingActionButton(
                             onClick = {
                                 if (uiState.results.count { res -> res.selected } > 0) {
                                     showConfirmBulkRemove = true

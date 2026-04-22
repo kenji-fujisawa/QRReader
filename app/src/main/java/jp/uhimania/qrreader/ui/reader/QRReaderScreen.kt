@@ -14,9 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -67,7 +67,7 @@ fun QRReaderScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             AnimatedVisibility(!uiState.isLoading) {
-                FloatingActionButton(
+                LargeFloatingActionButton(
                     onClick = {
                         if (uiState.decodedText != null) {
                             viewModel.saveResult()

@@ -32,10 +32,10 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -131,7 +131,7 @@ fun ScannedListScreen(
                 AnimatedContent(targetState = uiState.state) {
                     when (it) {
                         ScannedListScreenState.Normal -> {
-                            FloatingActionButton(onClick = onStartScanning) {
+                            LargeFloatingActionButton(onClick = onStartScanning) {
                                 Icon(
                                     imageVector = Icons.Filled.Add,
                                     contentDescription = Icons.Filled.Add.name
@@ -139,7 +139,7 @@ fun ScannedListScreen(
                             }
                         }
                         ScannedListScreenState.RemoveMode -> {
-                            FloatingActionButton(
+                            LargeFloatingActionButton(
                                 onClick = {
                                     viewModel.removeSelected()
                                     viewModel.setScreenState(ScannedListScreenState.Normal)
