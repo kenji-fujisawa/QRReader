@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.toComposeRect
 import androidx.compose.ui.platform.LocalClipboard
@@ -69,11 +70,11 @@ fun QRReaderScreen(
             AnimatedVisibility(!uiState.isLoading) {
                 LargeFloatingActionButton(
                     onClick = {
-                        if (uiState.decodedText != null) {
+                        if (!uiState.codes.isEmpty()) {
                             viewModel.saveResult()
                         }
                     },
-                    containerColor = if (uiState.decodedText != null) {
+                    containerColor = if (!uiState.codes.isEmpty()) {
                         FloatingActionButtonDefaults.containerColor
                     } else {
                         MaterialTheme.colorScheme.surfaceVariant
@@ -110,10 +111,10 @@ fun QRReaderScreen(
                     context = context,
                     lifecycleOwner = lifecycleOwner,
                     callback = { barcodes, size ->
-                        barcodes.firstOrNull()?.displayValue?.let {
-                            viewModel.updateDecodedText(it)
+                        if (!barcodes.isEmpty()) {
+                            viewModel.updateCodeTexts(barcodes.map { it.displayValue ?: "" })
                         }
-                        viewModel.updateBarcodeRect(barcodes.firstOrNull()?.boundingBox?.toComposeRect())
+                        viewModel.updateCodeBounds(barcodes.map { it.boundingBox?.toComposeRect() ?: Rect.Zero })
                         viewModel.updateImageSize(size)
                     }
                 )
@@ -126,7 +127,7 @@ fun QRReaderScreen(
                         cameraProvider.bind(it)
                     }
                 )
-                uiState.barCodeRect?.let {
+                uiState.bounds.forEach {
                     BarcodeMarker(
                         barcodeRect = it,
                         screenSize = screenSize,
@@ -144,29 +145,29 @@ fun QRReaderScreen(
                 }
             }
 
-            uiState.decodedText?.let {
+            uiState.codes.firstOrNull()?.let {
                 val urlHandler = LocalUriHandler.current
                 val clipboard = LocalClipboard.current
                 LaunchedEffect(snackbarHostState, it) {
                     val open = context.getString(R.string.action_label_open)
                     val copy = context.getString(R.string.action_label_copy)
                     val result = snackbarHostState.showSnackbar(
-                        message = it,
-                        actionLabel = if (uiState.isUrl) open else copy,
+                        message = it.text,
+                        actionLabel = if (it.isUrl) open else copy,
                         duration = SnackbarDuration.Long
                     )
                     when (result) {
                         SnackbarResult.ActionPerformed -> {
-                            if (uiState.isUrl) {
-                                urlHandler.openUri(it)
+                            if (it.isUrl) {
+                                urlHandler.openUri(it.text)
                             } else {
-                                val data = ClipData.newPlainText(it, it)
+                                val data = ClipData.newPlainText(it.text, it.text)
                                 clipboard.setClipEntry(data.toClipEntry())
                             }
                         }
 
                         SnackbarResult.Dismissed -> {
-                            viewModel.updateDecodedText(null)
+                            viewModel.updateCodeTexts(listOf())
                         }
                     }
                 }

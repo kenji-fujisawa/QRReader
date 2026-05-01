@@ -19,7 +19,6 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -36,37 +35,44 @@ class QRReaderViewModelTest {
         val validateUrlUseCase = ValidateUrlUseCase()
         val getPagePreviewUseCase = DefaultGetPagePreviewUseCase()
         val viewModel = QRReaderViewModel(repository, validateUrlUseCase, getPagePreviewUseCase)
-        assertNull(viewModel.uiState.value.decodedText)
-        assertFalse(viewModel.uiState.value.isUrl)
-        assertNull(viewModel.uiState.value.barCodeRect)
+        assertEquals(0, viewModel.uiState.value.codes.count())
+        assertEquals(0, viewModel.uiState.value.bounds.count())
         assertEquals(Size.Zero, viewModel.uiState.value.imageSize)
 
-        var text = "aaa"
-        viewModel.updateDecodedText(text)
-        assertEquals(text, viewModel.uiState.value.decodedText)
-        assertFalse(viewModel.uiState.value.isUrl)
-        assertNull(viewModel.uiState.value.barCodeRect)
+        var texts = listOf("aaa", "bbb")
+        viewModel.updateCodeTexts(texts)
+        assertEquals(2, viewModel.uiState.value.codes.count())
+        assertEquals(texts[0], viewModel.uiState.value.codes[0].text)
+        assertEquals(texts[1], viewModel.uiState.value.codes[1].text)
+        assertFalse(viewModel.uiState.value.codes[0].isUrl)
+        assertFalse(viewModel.uiState.value.codes[1].isUrl)
+        assertEquals(0, viewModel.uiState.value.bounds.count())
         assertEquals(Size.Zero, viewModel.uiState.value.imageSize)
 
-        text = "https://google.com/"
-        viewModel.updateDecodedText(text)
-        assertEquals(text, viewModel.uiState.value.decodedText)
-        assertTrue(viewModel.uiState.value.isUrl)
-        assertNull(viewModel.uiState.value.barCodeRect)
+        texts = listOf("https://google.com/")
+        viewModel.updateCodeTexts(texts)
+        assertEquals(1, viewModel.uiState.value.codes.count())
+        assertEquals(texts[0], viewModel.uiState.value.codes[0].text)
+        assertTrue(viewModel.uiState.value.codes[0].isUrl)
+        assertEquals(0, viewModel.uiState.value.bounds.count())
         assertEquals(Size.Zero, viewModel.uiState.value.imageSize)
 
-        val rect = Rect(10f, 20f, 30f, 40f)
-        viewModel.updateBarcodeRect(rect)
-        assertEquals(text, viewModel.uiState.value.decodedText)
-        assertTrue(viewModel.uiState.value.isUrl)
-        assertEquals(rect, viewModel.uiState.value.barCodeRect)
+        val bounds = listOf(Rect(10f, 20f, 30f, 40f))
+        viewModel.updateCodeBounds(bounds)
+        assertEquals(1, viewModel.uiState.value.codes.count())
+        assertEquals(texts[0], viewModel.uiState.value.codes[0].text)
+        assertTrue(viewModel.uiState.value.codes[0].isUrl)
+        assertEquals(1, viewModel.uiState.value.bounds.count())
+        assertEquals(bounds[0], viewModel.uiState.value.bounds[0])
         assertEquals(Size.Zero, viewModel.uiState.value.imageSize)
 
         val size = Size(100f, 200f)
         viewModel.updateImageSize(size)
-        assertEquals(text, viewModel.uiState.value.decodedText)
-        assertTrue(viewModel.uiState.value.isUrl)
-        assertEquals(rect, viewModel.uiState.value.barCodeRect)
+        assertEquals(1, viewModel.uiState.value.codes.count())
+        assertEquals(texts[0], viewModel.uiState.value.codes[0].text)
+        assertTrue(viewModel.uiState.value.codes[0].isUrl)
+        assertEquals(1, viewModel.uiState.value.bounds.count())
+        assertEquals(bounds[0], viewModel.uiState.value.bounds[0])
         assertEquals(size, viewModel.uiState.value.imageSize)
     }
 
@@ -81,32 +87,40 @@ class QRReaderViewModelTest {
         val viewModel = QRReaderViewModel(repository, validateUrlUseCase, getPagePreviewUseCase)
 
         viewModel.saveResult()
-        assertNull(repository.savedResult)
+        assertEquals(0, repository.savedResults.count())
 
-        var text = "aaa"
-        viewModel.updateDecodedText(text)
+        var texts = listOf("aaa", "bbb")
+        viewModel.updateCodeTexts(texts)
         viewModel.saveResult()
-        assertEquals(text, repository.savedResult?.text)
-        assertEquals("", repository.savedResult?.title)
-        assertEquals("", repository.savedResult?.description)
-        assertEquals("", repository.savedResult?.image)
+        assertEquals(2, repository.savedResults.count())
+        assertEquals(texts[0], repository.savedResults[0].text)
+        assertEquals("", repository.savedResults[0].title)
+        assertEquals("", repository.savedResults[0].description)
+        assertEquals("", repository.savedResults[0].image)
+        assertEquals(texts[1], repository.savedResults[1].text)
+        assertEquals("", repository.savedResults[1].title)
+        assertEquals("", repository.savedResults[1].description)
+        assertEquals("", repository.savedResults[1].image)
 
-        text = "https://google.com"
-        viewModel.updateDecodedText(text)
+        repository.savedResults.clear()
+
+        texts = listOf("https://google.com")
+        viewModel.updateCodeTexts(texts)
         viewModel.saveResult()
-        assertEquals(text, repository.savedResult?.text)
-        assertEquals(getPagePreviewUseCase(text).title, repository.savedResult?.title)
-        assertEquals(getPagePreviewUseCase(text).description, repository.savedResult?.description)
-        assertEquals(getPagePreviewUseCase(text).image, repository.savedResult?.image)
+        assertEquals(1, repository.savedResults.count())
+        assertEquals(texts[0], repository.savedResults[0].text)
+        assertEquals(getPagePreviewUseCase(texts[0]).title, repository.savedResults[0].title)
+        assertEquals(getPagePreviewUseCase(texts[0]).description, repository.savedResults[0].description)
+        assertEquals(getPagePreviewUseCase(texts[0]).image, repository.savedResults[0].image)
     }
 
     class FakeScannedResultRepository : ScannedResultRepository {
         override fun getResultsStream(): Flow<List<ScannedResult>> { return flowOf() }
         override fun getDeletedResultsStream(): Flow<List<ScannedResult>> { return flowOf() }
 
-        var savedResult: ScannedResult? = null
+        var savedResults: MutableList<ScannedResult> = mutableListOf()
         override suspend fun saveResult(result: ScannedResult) {
-            savedResult = result
+            savedResults.add(result)
         }
 
         override suspend fun markAsDelete(id: String) {}
