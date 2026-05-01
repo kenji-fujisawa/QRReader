@@ -23,12 +23,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class QRReaderUiState(
-    val decodedText: String? = null,
-    val isUrl: Boolean = false,
-    val barCodeRect: Rect? = null,
+    val codes: List<Code> = listOf(),
+    val bounds: List<Rect> = listOf(),
     val imageSize: Size = Size.Zero,
     val isLoading: Boolean = false
-)
+) {
+    data class Code(
+        val text: String = "",
+        val isUrl: Boolean = false
+    )
+}
 
 class QRReaderViewModel(
     private val repository: ScannedResultRepository,
@@ -41,16 +45,24 @@ class QRReaderViewModel(
     private val _navigateToBack = MutableSharedFlow<Unit>()
     val navigateToBack = _navigateToBack.asSharedFlow()
 
-    fun updateDecodedText(text: String?) {
-        if (text != _uiState.value.decodedText) {
-            _uiState.update { it.copy(decodedText = text, isUrl = validateUrlUseCase(text ?: "")) }
+    fun updateCodeTexts(texts: List<String>) {
+        val old = _uiState.value.codes.map { it.text }
+        if (old != texts) {
+            _uiState.update {
+                it.copy(
+                    codes = texts.map { text ->
+                        QRReaderUiState.Code(
+                            text = text,
+                            isUrl = validateUrlUseCase(text)
+                        )
+                    }
+                )
+            }
         }
     }
 
-    fun updateBarcodeRect(rect: Rect?) {
-        if (rect != _uiState.value.barCodeRect) {
-            _uiState.update { it.copy(barCodeRect = rect) }
-        }
+    fun updateCodeBounds(bounds: List<Rect>) {
+        _uiState.update { it.copy(bounds = bounds) }
     }
 
     fun updateImageSize(size: Size) {
@@ -60,30 +72,30 @@ class QRReaderViewModel(
     }
 
     fun saveResult() {
-        _uiState.value.decodedText?.let { text ->
-            _uiState.update { it.copy(isLoading = true) }
+        _uiState.update { it.copy(isLoading = true) }
 
-            viewModelScope.launch {
-                val result = if (!_uiState.value.isUrl) {
-                    ScannedResult(text = text)
+        viewModelScope.launch {
+            _uiState.value.codes.forEach { code ->
+                val result = if (!code.isUrl) {
+                    ScannedResult(text = code.text)
                 } else {
                     try {
-                        val preview = getPagePreviewUseCase(text)
+                        val preview = getPagePreviewUseCase(code.text)
                         ScannedResult(
-                            text = text,
+                            text = code.text,
                             title = preview.title,
                             description = preview.description,
                             image = preview.image
                         )
                     } catch (_: Exception) {
-                        ScannedResult(text = text)
+                        ScannedResult(text = code.text)
                     }
                 }
 
                 repository.saveResult(result)
-
-                _navigateToBack.emit(Unit)
             }
+
+            _navigateToBack.emit(Unit)
         }
     }
 
